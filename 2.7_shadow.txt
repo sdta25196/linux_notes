@@ -3,6 +3,38 @@
 2、What's flags '!!' and '*' mean second field in /et/shadow?
 	Answer: '!!' mean is this account not set password, '*' mean's this account is be locked, inactive.
 3、which mean the 5th field int /etc/shadow?
-	Answer: The number of days before a password is going to expire (see the maximum password age above)
-during which the user should be warned.
-	 An empty field and value 0 mean that there are no password warning period.
+	Answer: maximum password age
+           The maximum password age is the number of days after which the user will have to change her password.
+
+           After this number of days is elapsed, the password may still be valid. The user should be asked to change
+           her password the next time she will log in.
+
+           An empty field means that there are no maximum password age, no password warning period, and no password
+           inactivity period (see below).
+
+           If the maximum password age is lower than the minimum password age, the user cannot change her password.
+	
+This bellow is my test.
+Changed the login user wilsh maxinum password age to zero.
+[root@server ~]# cat /etc/shadow | grep -i wilsh
+wilsh:$6$lVvOv7uq$RcEufCoSN07SYSzTbKT.k1j.OxMc9hYhyy0JC8soWJ8LCHRuVRGJFdVr9dOxM.T1IT5drUglIGwepuAbiP9cA0:16796:0:0:7:::
+[root@server ~]# 
+
+Current Date:
+[root@server ~]# date +%F
+2016-01-17
+Then I modified it:
+[root@server ~]# date -s "2016-01-18 12:00:00"
+Mon Jan 18 12:00:00 CST 2016
+
+localhost:~ cn$ ssh -l wilsh -p 22 192.168.3.66
+wilsh@192.168.3.66's password: 
+Permission denied, please try again.
+wilsh@192.168.3.66's password: 
+You are required to change your password immediately (password aged)
+Welecome Again, have a happy day, enjoy it...
+WARNING: Your password has expired.
+You must change your password now and login again!
+Changing password for user wilsh.
+Changing password for wilsh.
+(current) UNIX password: 

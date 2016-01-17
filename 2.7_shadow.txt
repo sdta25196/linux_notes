@@ -15,18 +15,22 @@
            If the maximum password age is lower than the minimum password age, the user cannot change her password.
 	
 This bellow is my test.
+===========================================================================================================
 Changed the login user wilsh maxinum password age to zero.
 [root@server ~]# cat /etc/shadow | grep -i wilsh
 wilsh:$6$lVvOv7uq$RcEufCoSN07SYSzTbKT.k1j.OxMc9hYhyy0JC8soWJ8LCHRuVRGJFdVr9dOxM.T1IT5drUglIGwepuAbiP9cA0:16796:0:0:7:::
 [root@server ~]# 
 
+===========================================================================================================
 Current Date:
 [root@server ~]# date +%F
 2016-01-17
+===========================================================================================================
 Then I modified it:
 [root@server ~]# date -s "2016-01-18 12:00:00"
 Mon Jan 18 12:00:00 CST 2016
 
+===========================================================================================================
 localhost:~ cn$ ssh -l wilsh -p 22 192.168.3.66
 wilsh@192.168.3.66's password: 
 Permission denied, please try again.
@@ -38,3 +42,17 @@ You must change your password now and login again!
 Changing password for user wilsh.
 Changing password for wilsh.
 (current) UNIX password: 
+===========================================================================================================
+
+if the 5th field is setting to 0, then you can login, so follow me
+===========================================================================================================
+Last login: Sun Jan 17 12:00:24 on ttys003
+localhost:review_notes_after_class cn$ !ssh
+ssh -l wilsh -p 22 192.168.3.66
+wilsh@192.168.3.66's password: 
+Warning: your password will expire in 0 days
+Last login: Tue Jan 19 12:00:27 2016 from 192.168.3.100
+Welecome Again, have a happy day, enjoy it...
+-bash: warning: setlocale: LC_CTYPE: cannot change locale (UTF-8): No such file or directory
+[wilsh@server ~]$ '
+===========================================================================================================

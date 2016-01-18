@@ -1,7 +1,7 @@
 1、what's the password encrypt in /etc/shadow on Centos6?
 	Answer: sha-512
 2、What's flags '!!' and '*' mean second field in /et/shadow?
-	Answer: '!!' mean is this account not set password, '!' mean's this account is be locked, inactive.
+	Answer: '!!' mean is this account not set password and this account is been locked, '!' mean's this account is be locked, inactive.
 3、which mean the 5th field int /etc/shadow?
 	Answer: maximum password age
            The maximum password age is the number of days after which the user will have to change her password.

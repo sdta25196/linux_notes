@@ -1,0 +1,12 @@
+1. unzip -d dir
+can change extract file to spec directory, that after option '-d' must be a directory.
+
+e.g.
+[root@centos ~]# unzip -d install.log.zip /tmp/
+unzip:  cannot find or open /tmp/, /tmp/.zip or /tmp/.ZIP.
+[root@centos ~]# unzip install.log.zip -d /tmp
+Archive:  install.log.zip
+  inflating: /tmp/install.log        
+  [root@centos ~]# ls /tmp/install.log 
+  /tmp/install.log
+  [root@centos ~]# 

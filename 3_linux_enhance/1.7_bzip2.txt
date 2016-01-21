@@ -1,4 +1,5 @@
-bzip的默认压缩级别是9，参考man page中的，如下：
+1、bzip的默认压缩级别是9，参考man page中的，如下：
+2、bzip -c file > std.bz2 # This command won't delete source file , It will be print stdout when compressing a file.
 NAME
   bzip2, bunzip2 - a block-sorting file compressor, v1.0.4
   bzcat - decompresses files to stdout

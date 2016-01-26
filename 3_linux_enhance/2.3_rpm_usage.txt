@@ -1,0 +1,4 @@
+rpm -qa package_name
+rpm -ql package_name #list the location of each file install by the rpm package
+rpm -qf package_command_name #rpm -qf /bin/ls
+rpm -qi package_name #list the package information or rpm -qf /usr/share/man/man1/sgpio.1.gz

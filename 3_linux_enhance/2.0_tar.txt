@@ -1,0 +1,2 @@
+tar
+	--exclude=[file,dir] It means when you saves many file to a single file, you can use this option exclude some directories or file, but directory can not used be DIR/, the correct type is --exclude=DIR not --exclude=DIR/

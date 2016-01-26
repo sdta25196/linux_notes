@@ -9,3 +9,5 @@ You can to to this too, For example;
 [root@CF_ALY_CN bin]# rpm -qf vim
 vim-enhanced-7.2.411-1.8.el6.x86_64
 [root@CF_ALY_CN bin]#
+
+rpm -qf `which vim`

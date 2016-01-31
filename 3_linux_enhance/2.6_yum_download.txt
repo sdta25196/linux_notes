@@ -1,0 +1,5 @@
+1. If you wanna to download a rpm package you can use this command
+    yum install -y downloadonly
+    yum install -y package_name --downloadonly --downloaddir=PREFIX
+   If that package is already installed, then you can use this command, Because it's only can download not install on local by default. 
+    yum reinstall -y package_name --downloadonly --downloaddir=PREFIX

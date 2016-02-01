@@ -1,0 +1,79 @@
+1. Display local system all of variables
+    env #only display the system variables
+    set #include a user define variable.
+2. define avariable
+    variable_name=variable_value # that betwen variable_value and variable_value with blank is not permitt. and start with integer is not permmit too.
+3. Example
+[root@CF_ALY_CN ~]# b=132 abc
+-bash: abc: command not found
+[root@CF_ALY_CN ~]# b="132 abc"
+[root@CF_ALY_CN ~]# echo $b
+132 abc
+[root@CF_ALY_CN ~]# c=123#bb
+[root@CF_ALY_CN ~]# echo $c
+123#bb
+[root@CF_ALY_CN ~]# d=13!#$!$%^%^*(0
+d=13d=13$c%^%^*(0
+-bash: syntax error near unexpected token `('
+[root@CF_ALY_CN ~]# d="13d=13$c%^%^*(0"
+[root@CF_ALY_CN ~]# echo $d
+13d=13123#bb%^%^*(0
+[root@CF_ALY_CN ~]# d='13d=13$c%^%^*(0'
+[root@CF_ALY_CN ~]# echo $d
+13d=13$c%^%^*(0
+[root@CF_ALY_CN ~]#
+
+[root@CF_ALY_CN ~]# a=1
+[root@CF_ALY_CN ~]# b=2
+[root@CF_ALY_CN ~]# c=3
+[root@CF_ALY_CN ~]# d=4
+[root@CF_ALY_CN ~]# b=$a+1
+[root@CF_ALY_CN ~]# echo $b
+1+1
+[root@CF_ALY_CN ~]# b=$c1
+[root@CF_ALY_CN ~]# echo $b # the result is null because of ' priority is larger than ", and the shell look as c1(echo $c1) is a new variable.
+
+[root@CF_ALY_CN ~]# b="$a"1
+[root@CF_ALY_CN ~]# echo $b
+11
+[root@CF_ALY_CN ~]# b='$a'2
+[root@CF_ALY_CN ~]# echo $b
+$a2
+[root@CF_ALY_CN ~]# 
+
+[root@CF_ALY_CN ~]# set
+BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:expand_aliases:extquote:force_fignore:hostcomplete:interactive_comments:login_shell:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+    BASH_ARGC=()
+    BASH_ARGV=()
+    BASH_CMDS=()
+    BASH_LINENO=()
+............. ...................
+SH_CONNECTION='123.117.104.238 54632 123.57.58.71 22'
+SSH_TTY=/dev/pts/0
+TERM=xterm-256color
+UID=0
+USER=root
+_=env
+a=1
+aaa=kkkk
+b='$a2'
+c=3
+colors=/root/.dircolors
+d=4
+[root@CF_ALY_CN ~]# unset a
+[root@CF_ALY_CN ~]# unset aaa
+[root@CF_ALY_CN ~]# unset b
+[root@CF_ALY_CN ~]# unset c
+[root@CF_ALY_CN ~]# unset d
+[root@CF_ALY_CN ~]# unset
+[root@CF_ALY_CN ~]# set
+BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:expand_aliases:extquote:force_fignore:hostcomplete:interactive_comments:login_shell:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+    BASH_ARGC=()
+    BASH_ARGV=()
+    BASH_CMDS=()
+    BASH_LINENO=()
+

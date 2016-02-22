@@ -1,0 +1,36 @@
+1. tar zcvf file_name.tar.gz source_file
+2. tar jcvf file_name.tar.bz2 source_name
+3. tar Jcvf file_name.tar.xz source_name
+
+1.1 tar zxvf file_name.tar.gz source_file
+2.1 tar jxvf file_name.tar.bz2 source_name
+3.1 tar Jxvf file_name.tar.xz source_name
+
+[root@changfeng test]# ls
+tmp.tar
+[root@changfeng test]# tar jcvf tmp.tar.bz2 tmp.tar
+tmp.tar
+[root@changfeng test]# ls
+tmp.tar  tmp.tar.bz2
+[root@changfeng test]# tar -jtvf tmp.tar.bz2 
+-rw-r--r-- root/root    552960 2016-01-24 10:25 tmp.tar
+[root@changfeng test]# tar zcvf tmp.tar.gz tmp.tar
+tmp.tar
+[root@changfeng test]# tar Jcvf tmp.tar.xz tmp.tar
+tmp.tar
+[root@changfeng test]# ls
+tmp.tar  tmp.tar.bz2  tmp.tar.gz  tmp.tar.xz
+[root@changfeng test]# file tmp.tar.*
+tmp.tar.bz2: bzip2 compressed data, block size = 900k
+tmp.tar.gz:  gzip compressed data, from Unix, last modified: Sun Jan 24 10:31:15 2016
+tmp.tar.xz:  xz compressed data
+[root@changfeng test]# ls -lh !$
+ls -lh tmp.tar.*
+-rw-r--r-- 1 root root 107K Jan 24 10:30 tmp.tar.bz2
+-rw-r--r-- 1 root root 197K Jan 24 10:31 tmp.tar.gz
+-rw-r--r-- 1 root root  73K Jan 24 10:31 tmp.tar.xz
+[root@changfeng test]# man tar
+[root@changfeng test]# 
+[root@changfeng test]# ls
+tmp.tar  tmp.tar.bz2  tmp.tar.gz  tmp.tar.xz
+[root@changfeng test]# 

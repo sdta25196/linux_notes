@@ -1,0 +1,13 @@
+1. unzip -d dir
+can change extract file to spec directory, that after option '-d' must be a directory.
+2. view gz, zip, bzip... extention files with less, but gz, bzip can see file content, and less *.zip just like ls -l, and we can see percent of compressed.
+
+e.g.
+[root@centos ~]# unzip -d install.log.zip /tmp/
+unzip:  cannot find or open /tmp/, /tmp/.zip or /tmp/.ZIP.
+[root@centos ~]# unzip install.log.zip -d /tmp
+Archive:  install.log.zip
+  inflating: /tmp/install.log        
+  [root@centos ~]# ls /tmp/install.log 
+  /tmp/install.log
+  [root@centos ~]# 

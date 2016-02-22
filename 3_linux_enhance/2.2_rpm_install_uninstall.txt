@@ -1,5 +1,0 @@
-rpm -ivh package_name
-rmp -Uvh package_name
-rpm -e package_no_lease_number_and_extention
-rpm -ivh --nodeps package_name
-rpm -ivh --force package_name #It will be reinstall the package

@@ -1,3 +1,22 @@
+2016-02-22
+今天学习的内容如下
+1、shell的特性、命令补全，命令历史，别名，子shell等
+2、shell变量，变量的命名，
+	a、区分大小写，不能以数字开关，不建议使用大写、系统命令、系统关键字、特殊符号来命名变量，系统变量一般都是大写的
+	b、当变量含有特殊字符的时候，需要用单引号，单引号会剥夺特殊含义，类似于转义字符
+	c、使用反引号``，作用是引用命令的结果，如vim_path=`which vim`
+	d、命令的叠加，如：
+		myvim=/usr/bin/vim 
+		tmp="$myvim":tmp 
+		echo tmp
+		/usr/bin/vim:tmp
+3、子shell，export在子shell中引用父shell中的变量，关于export命令的介绍可以参考这篇文章，http://mymobile.iteye.com/blog/1407601
+4、local, cann only be used in a function
+5、/etc/profile全局
+
+	
+
+
 1. Display local system all of variables
     env #only display the system variables
     set #include a user define variable.

@@ -21,4 +21,4 @@ ls: cannot access 3.txt: No such file or directory
 ls: cannot access 3.txt: No such file or directory
 [root@server ~]# ls 3.txt && aaaaaaaaaaaaaaaaaaaaaaaaaaa
 ls: cannot access 3.txt: No such file or directory
-
+; 不论左边的命令执行成功与否，都会执行右边的命令。

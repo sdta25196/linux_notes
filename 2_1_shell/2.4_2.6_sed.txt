@@ -1,0 +1,58 @@
+sed -n '10'p file #打印第10行
+sed -n '1,10'p file #打印1-10行
+sed -n '30,$'p file #打印第30行到末行
+sed -n '/root/'p file #打印包含root的行
+sed -n 'r.o/'p file  
+sed -n 'r.*t/'p file 
+sed -n 'r\?\?'/p file
+sed -n 'r\+o'p file
+sed -n '/root\|nologin/'p /etc/passwd
+sed -n '/\(oo\)\+/'p /etc/passwd #把(oo)看作一个整体
+sed -n -r '/(oo)+/'p /etc/passwd
+
+cat 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/^$/'d 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9]/'d 1.txt
+aaaaaaaaaaaaa
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9a-zA-Z]/'d 1.txt
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9][a-z][A-Z]/'d 1.txt #很明显这样并不能得到想要的结果
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+
+[root@CH ~]# sed '1,2'd 1.txt #删除1到2行
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]# cat 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]#
+
+#sed的替换功能
+sed -i '1,$s/a/b/g' 1.txt
+
+#下面两个命令没有什么区别
+sed -n '/root/p' /etc/passwd
+sed -n '/root/'p /etc/passwd
+sed -i ‘8s/.*/IPADDR=$ipaddr/'
+
+

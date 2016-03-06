@@ -1,0 +1,71 @@
+sed -n '10'p file #打印第10行
+sed -n '1,10'p file #打印1-10行
+sed -n '30,$'p file #打印第30行到末行
+sed -n '/root/'p file #打印包含root的行
+sed -n 'r.o/'p file  
+sed -n 'r.*t/'p file 
+sed -n 'r\?\?'/p file
+sed -n 'r\+o'p file
+sed -n '/root\|nologin/'p /etc/passwd
+sed -n '/\(oo\)\+/'p /etc/passwd #把(oo)看作一个整体
+sed -n -r '/(oo)+/'p /etc/passwd
+================================================ e.g. EXAMPLE... ================================================
+cat 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/^$/'d 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9]/'d 1.txt
+aaaaaaaaaaaaa
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9a-zA-Z]/'d 1.txt
+
+!#$!@#$!#$!
+[root@CH ~]# sed '/[0-9][a-z][A-Z]/'d 1.txt #很明显这样并不能得到想要的结果
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+
+[root@CH ~]# sed '1,2'd 1.txt #删除1到2行
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]# cat 1.txt
+3.txt
+aaaaaaaaaaaaa
+333333333333
+
+!#$!@#$!#$!
+[root@CH ~]#
+
+#sed的替换功能
+sed -i '1,$s/a/b/g' 1.txt
+
+#下面两个命令没有什么区别
+sed -n '/root/p' /etc/passwd
+sed -n '/root/'p /etc/passwd
+sed -i ‘8s/.*/IPADDR=$ipaddr/'
+
+================================================ TO BE CONTINUED... ================================================
+sed '1,10s/root/toor/g' file_name		#1-10行，把所有的root替换为toor
+sed 's/root/toor/g' file_name			#把全文所有的root替换为toor
+sed 's/\/sbin\/nologin/login/g' file_name	#这里把/sbin/nologin替换为login，需要使用脱义
+sed 's#/sbin/nologin#login#g' file_name		#上面的命令也可以使用其它的符号来分隔，#,!，@都是可以的。
+sed 's@/sbin/nologin@/login@' file_name		#同上
+sed 's#.*$#login#g' file_name			#把所有的行都变为login
+sed 's#.*$#&login#g' file_name			#在所有的行后追回login
+sed 's#[a-zA-Z]##g' file_name			#把所有的字母都删掉
+sed 's#[^0-9A-Za-z]##g' file_name		#只保留数字和字母，也就是把所有的非数字、字母都给删掉
+sed -r 's#(^[0-9a-zA-Z]+)(:.*:)(.*$)#\3\3\1#g' file_name #这里，前面的3个括号分别表示3个部分，最终的结果会把3的位置和1的位置互换
+
+
+

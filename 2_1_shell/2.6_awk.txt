@@ -95,6 +95,12 @@ operator:x:11:0:operator:/root:/sbin/nologin
 nobooooooooooooooooooody:x:99:99:Nobody:/:/sbin/nologin
 postfix:x:89:89::/var/spool/postfix:/sbin/nologin
 [root@CH ~]#
+####awk使用特殊符号
+如果想让awk支持\{\}，得在awk命令行中加入--posix参数.
+gawk --posix -F ':' '$1~/(oo)+|y{1,2}/' passwd
+root:x:0:0:root:/root:/bin/bash
+nobody:x:65534:65533:nobody:/var/lib/nobody:/bin/bash
+yanwh:x:1002:1000::/home/yanwh:/bin/bash
 ####grep的使用方式
 [root@CH ~]# grep -E '(oo){2,4}' 1.txt
 noboooooooody:x:99:99:Nobody:/:/sbin/nologin
@@ -170,7 +176,7 @@ sshd 74
 fd 500
 
 ###############################################################################
-确实是因为想让awk支持\{\}，得在awk命令行中加入--posix参数.
+如果想让awk支持\{\}，得在awk命令行中加入--posix参数.
 gawk --posix -F ':' '$1~/(oo)+|y{1,2}/' passwd
 root:x:0:0:root:/root:/bin/bash
 nobody:x:65534:65533:nobody:/var/lib/nobody:/bin/bash

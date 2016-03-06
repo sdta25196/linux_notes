@@ -191,6 +191,134 @@ aming
 noboooooooody:x:99:99:Nobody:/:/sbin/nologin
 [root@CH ~]#
 ###############################################################################
+2016-3-6 4:20:15
+####完全匹配
+[root@CH ~]# awk -F ':' '$1=="root"' 1.txt
+root:x:0:0:root:/root:/bin/bash
+[root@CH ~]# awk -F ':' '$1=="ftp"; $1=="mail"' 1.txt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+####也可以使用逻辑连接符号，如下：
+[root@CH ~]# awk -F ':' '$1=="ftp" || $4~/99/' 1.txt
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+noboooooooody:x:99:99:Nobody:/:/sbin/nologin
+[root@CH ~]# awk -F ':' '$1=="ftp" && $4~/50/' 1.txt
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+[root@CH ~]# awk -F ':' '$1=="ftp" && $4~/51/' 1.txt
+[root@CH ~]# awk -F ':' '$1=="ftp" && $4=="50"' 1.txt
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+[root@CH ~]# awk -F ':' '$1=="ftp" || $4=="99"' 1.txt
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+noboooooooody:x:99:99:Nobody:/:/sbin/nologin
+[root@CH ~]#
+#### 也可以指定的字段进行数字比较，注意下面有没有双引号的区别
+[root@CH ~]# awk -F ':' '$3>="500"' 1.txt
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+noboooooooody:x:99:99:Nobody:/:/sbin/nologin
+vcsa:x:69:69:virtual console memory owner:/dev:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+fd:x:500:500::/home/fd:/bin/bash
+[root@CH ~]#
+[root@CH ~]# awk -F ':' '$4!=0' 1.txt
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+uucp:x:10:14:uucp:/var/spool/uucp:/sbin/nologin
+games:x:12:100:games:/usr/games:/sbin/nologin
+gopher:x:13:30:gopher:/var/gopher:/sbin/nologin
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+noboooooooody:x:99:99:Nobody:/:/sbin/nologin
+vcsa:x:69:69:virtual console memory owner:/dev:/sbin/nologin
+saslauth:x:499:76:Saslauthd user:/var/empty/saslauth:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+fd:x:500:500::/home/fd:/bin/bash
+[root@CH ~]#
+[root@CH ~]# awk -F ':' '$7!="/sbin/nologin"' 1.txt
+root:x:0:0:root:/root:/bin/bash
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+fd:x:500:500::/home/fd:/bin/bash
+[root@CH ~]#
+####下面的!也可以用来匹配，可以使用转义字符\，也可以使用.来代替任意的一个字符
+[root@CH ~]# awk -F ':' '$7!~/sbin.nologin/' 1.txt
+root:x:0:0:root:/root:/bin/bash
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+fd:x:500:500::/home/fd:/bin/bash
+[root@CH ~]# awk -F ':' '$7!~/sbin\/nologin/' 1.txt
+root:x:0:0:root:/root:/bin/bash
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+fd:x:500:500::/home/fd:/bin/bash
+[root@CH ~]#
+####也可以两字段进行比较
+[root@CH ~]# awk -F ':' '$3>$4' 1.txt
+sync:x:5:0:sync:/sbin:/bin/sync
+shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown
+halt:x:7:0:halt:/sbin:/sbin/halt
+operator:x:11:0:operator:/root:/sbin/nologin
+saslauth:x:499:76:Saslauthd user:/var/empty/saslauth:/sbin/nologin
+[root@CH ~]# awk -F ':' '$3<$4' 1.txt
+adm:x:3:4:adm:/var/adm:/sbin/nologin
+lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+... ...
+ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin
+[root@CH ~]#
+####注意下面的==和=的区别，=是赋值，而==是比较
+[root@CH ~]# awk -F ':' '$3=$4' 1.txt
+bin x 1 1 bin /bin /sbin/nologin
+daemon x 2 2 daemon /sbin /sbin/nologin
+... ...
+postfix x 89 89  /var/spool/postfix /sbin/nologin
+sshd x 74 74 Privilege-separated SSH /var/empty/sshd /sbin/nologin
+fd x 500 500  /home/fd /bin/bash
+[root@CH ~]# awk -F ':' '$3==$4' 1.txt
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+nobody:x:99:99:Nobody:/:/sbin/nologin
+noboooooooody:x:99:99:Nobody:/:/sbin/nologin
+vcsa:x:69:69:virtual console memory owner:/dev:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+sshd:x:74:74:Privilege-separated SSH:/var/empty/sshd:/sbin/nologin
+fd:x:500:500::/home/fd:/bin/bash
+####指定输出分隔符
+[root@CH ~]# awk -F ':' 'OFS="____"; $3=$4' 1.txt
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+bin____x____1____1____bin____/bin____/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+daemon____x____2____2____daemon____/sbin____/sbin/nologin
+####使用if判断语句
+[root@CH ~]# awk -F ':' 'BEGIN{OFS="__"} {if($3>100){$7=$3+$4;print$0}}' 1.txt
+saslauth__x__499__76__Saslauthd user__/var/empty/saslauth__575
+fd__x__500__500____/home/fd__1000
+[root@CH ~]# awk -F ':' '{OFS="__"} {if($3>100){$7=$3+$4;print$0}}' 1.txt
+saslauth__x__499__76__Saslauthd user__/var/empty/saslauth__575
+fd__x__500__500____/home/fd__1000
+[root@CH ~]# awk -F ':' 'OFS="__" {if($3>100){$7=$3+$4;print$0}}' 1.txt
+saslauth__x__499__76__Saslauthd user__/var/empty/saslauth__575
+fd__x__500__500____/home/fd__1000
+
+
+
+
+
+
+
 
 
 

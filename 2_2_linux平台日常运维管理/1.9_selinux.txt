@@ -1,0 +1,5 @@
+1. sestatus #查看selinux的状态
+2. getenforce #查看selinux的状态
+3. setenforce 0 #临时关闭selinux
+4. setenforce 1 #临时打开selinux
+5. yum install -y libselinux-utils

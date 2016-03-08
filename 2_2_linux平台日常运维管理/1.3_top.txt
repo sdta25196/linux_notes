@@ -1,0 +1,50 @@
+ks: 138 total,   1 running, 136 sleeping,   1 stopped,   0 zombie
+Cpu(s):  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Mem:   1550588k total,   536272k used,  1014316k free,   114400k buffers
+Swap:  2097148k total,        0k used,  2097148k free,   318476k cached
+
+PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                                                                                                         
+5598 root      20   0  2708 1136  880 R  0.3  0.1   0:00.01 top                                                                                                             
+1 root      20   0  2900 1428 1208 S  0.0  0.1   0:00.89 init                                                                                                            
+2 root      20   0     0    0    0 S  0.0  0.0   0:00.00 kthreadd                                                                                                        
+3 root      RT   0     0    0    0 S  0.0  0.0   0:00.06 migration/0                                                                                                     
+4 root      20   0     0    0    0 S  0.0  0.0   0:00.00 ksoftirqd/0        
+
+shift+m: 按照内存大小排序，最大的排在上面
+shift+p: 按照cpu的使用率来排序，默认选项
+top -bn1 一次性打印所有的过程，通常用于写入到一个文件 
+PR: Privilage, 0~39
+NI: 
+h: PR  --  Priority
+          The priority of the task.
+
+i: NI  --  Nice value
+        The nice value of the task.  A negative nice value means higher priority, whereas a positive nice value means lower priority.  Zero in this field simply means priority will not be adjusted in determining a task’s dispatchability.
+
+ Startup Defaults
+        The  following  startup  defaults  assume  no configuration file, thus no user customizations.  Even so, items shown with an asterisk (’*’) could be
+               overridden through the command-line.
+
+                          Global_defaults
+                                        ’A’ - Alt display      Off (full-screen)
+                * ’d’ - Delay time       3.0 seconds
+                              ’I’ - Irix mode        On  (no, ’solaris’ smp)
+                * ’p’ - PID monitoring   Off
+                            * ’s’ - Secure mode      Off (unsecured)
+                  ’B’ - Bold disable     Off
+                             Summary_Area_defaults
+                                           ’l’ - Load Avg/Uptime  On  (thus program name)
+                  ’t’ - Task/Cpu states  On  (1+1 lines, see ’1’)
+                  ’m’ - Mem/Swap usage   On  (2 lines worth)
+                  ’1’ - Single Cpu       On  (thus 1 line if smp)
+               Task_Area_defaults
+                             ’b’ - Bold hilite      On  (not ’reverse’)
+                * ’c’ - Command line     Off (name, not cmdline)
+                * ’H’ - Threads          Off (show all threads)
+                * ’i’ - Idle tasks       On  (show all tasks)
+                  ’R’ - Reverse sort     On  (pids high-to-low)
+                * ’S’ - Cumulative time  Off (no, dead children)
+                  ’x’ - Column hilite    Off (no, sort field)
+                  ’y’ - Row hilite       On  (yes, running tasks)
+                  ’z’ - color/mono       Off (no, colors)
+

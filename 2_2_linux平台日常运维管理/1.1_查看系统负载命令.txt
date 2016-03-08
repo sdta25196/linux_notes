@@ -1,0 +1,11 @@
+1. w
+w  displays information about the users currently on the machine, and their pro- cesses.  The header shows, in this order,  the current time, how long the system has  been  running,  how many users are currently logged on, and the system load averages for the past 1, 5, and 15 minutes.
+
+[root@server ~]# w
+ 08:42:08 up 22 min,  1 user,  load average: 0.00, 0.00, 0.00
+ USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+ root     pts/0    192.168.3.17     08:38    0.00s  0.00s  0.00s w
+ load average: 0.00, 0.00, 0.00 3个值分别表示1分钟、5分钟、15分钟的使用率
+ IDLE:表示空闲时间
+ JCPU：JobCPU，表示当前PTS下的总共任务使用的CPU资源
+ PCPU：ProcessCPU，表示当前命令使用的CPU资源，具体的命令就是后面WHAT那一列

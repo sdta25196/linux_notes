@@ -1,0 +1,53 @@
+以下各个字段的含义：
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+r: #### running，表示当前正在运行或者是等待的进程，目前有几个进程处于活动中
+b: #### block，阻塞，是由于IO引起的，可以是网络、或者是磁盘
+
+swap: 单位是kb，有多少数据被交换了，如果这个值频繁的变化或者是非常大，则有可能是内存泄露或者是溢出
+free: 还剩余多少
+buff: 还剩余多少buff
+cache: 还剩余多少cache，以上这两个会在top中介绍
+si: swap in，动作是in，作用对象是内存，表示写内存，数据来源是swap，这里的对象是内存，到内存里去，in memory from swap
+so: swap out，动作是out，作用对象是内存，表示读内存，out到swap，从内存中读出来， out memory to swap
+bi: fron of block in，then to memory，动作是in，作用对象是内存，数据来源是block，磁盘，in memory from block，从磁盘中来到内存中去，读硬盘
+bo: fron memory  out to block，写磁盘，out memory to block
+
+in: Interrupt，单位s，中断的次数，参考意义不大，不宜过高
+cs: Context Swap，单位s，参考意义不大，不宜过高
+us: #### User Status，用户自己安装的程序、服务等耗费的CPU
+sy: system，kernel，系统内核自己耗费的。
+id: idle，空闲的。
+wa: wait
+st: steal
+***********************************************************************************
+如果提示没有这个命令，则可以使用下面的命令安装
+yum install -y sysstat
+***********************************************************************************
+
+
+[root@server ~]# vmstat 
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+0  0      0 1358432  67716  63340    0    0    22     3   21   30  0  0 99  1  0
+[root@server ~]# vmstat 1 3 
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+0  0      0 1358440  67716  63364    0    0    22     3   21   30  0  0 99  1  0
+0  0      0 1358432  67716  63364    0    0     0     0   30   15  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   45   87  0  0 100  0  0
+[root@server ~]# vmstat 1 
+procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+1  0      0 1358440  67716  63364    0    0    22     3   21   30  0  0 99  1  0
+0  0      0 1358432  67716  63364    0    0     0     0   55   91  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   23   18  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   43   83  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   25   19  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0    12   52   96  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   24   18  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   46   86  0  0 100  0  0
+0  0      0 1358432  67716  63364    0    0     0     0   25   17  0  0 100  0  0
+^Z
+[1]+  Stopped                 vmstat 1
+

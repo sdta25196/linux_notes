@@ -1,0 +1,15 @@
+[root@server ~]# free
+             total       used       free     shared    buffers     cached
+ Mem:       1550588     537868    1012720        428     114416     320964
+ -/+ buffers/cache:     102488    1448100 
+ Swap:      2097148          0    2097148 
+
+ -/+ buffers/cache: free 1448100 这个才是真正剩余的内存
+ 在linux中系统启动后，会先分配一部分内存，给buffers和cached，硬盘的速度是比较慢的，而cpu速度又比较快，所以缓存的概念就出来了，速度介于硬盘和cpu之间
+ 当我们从硬盘读数据的时候，会先把数据放在内存的一个区域，这个就是所谓的cached，cpu要处理的时候直接在内存中拿就可以。
+ 同理，当cpu要向硬盘中写数据时，并不直接写到硬盘，而是先放在内存的一个区域中，这个时候，这段区域就叫buffers
+ 
+下面的公式恒成立：
+free + buffers + cached = (-/+ buffers)->free
+(-/+ buffers)->free + (-/+ buffers)used = Mem->total
+ buffers和cached列的数字分别表示buffers和cached还有多少剩余

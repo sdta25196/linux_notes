@@ -74,3 +74,8 @@ There are screens on:
     2 Sockets in /var/run/screen/S-root.
 
 screen -S your_wanted_name #在启动一个screen的时候同时更改名字，可以通过screen -ls查看
+
+curl -u username:password web_site_url
+curl -o output_file_name URL
+curl -O URL #don't change default name
+

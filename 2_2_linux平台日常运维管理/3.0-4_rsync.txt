@@ -1,0 +1,60 @@
+Daemon方式使用rsync
+1. touch /etc/rsyncd.conf
+================================================================================================
+[root@server ~]# cat /etc/rsyncd.conf 
+#default is 870
+port=8730
+log file=/var/log/rsync.log
+pid file=/var/run/rsync.pid
+#address, ip addr, default is all of all
+
+[rsync]
+path=/tmp/rsync
+#yes|no|true|faulse, 是否将该用户限定到上面的目录，比如上面的path中有一些软链接到其它的目录，而我们在使用这个命令的时候指定了-L参数，那么就会跑到其它的目录（那个软链接是链接到一个目录），如果是yes则限定在path目录，不可以到其它的目录
+use chroot=yes 
+max connections=4
+#yes|no|true|faulse
+read only=yes 
+#是否允许把模块的名字列出来
+list=yes 
+uid=root
+gid=root
+#如果要使用auth，secrets这两个参数，则必须要使用密码文件的方式来认证，需要注意密码文件的权限
+#这里指定的用户的仅仅在使用的时候起作用，也就是说这里的用户名和系统的用户并没有关系。如/etc/rs.passwd中的配置为changfeng:123,在使用的时候你就要以changfeng＠的形式来，而且密码只能输入123才会有效
+auth users=changfeng
+secrets file=/etc/rs.passwd
+hosts allow=192.168.3.17
+
+[rsync_test]
+path=/tmp/rsync_test
+use chroot=yes
+max connection=4
+read only=yes
+list=yes
+uid=cf
+gid=cf
+================================================================================================
+
+2. 创建对应的目录
+3. 启动守护进程，rsync --daemon
+4. 检查端口服务是否正常启动
+    ps aux | grep -i rsync
+    netstat -tlnp | grep rsync
+5. chek it out!
+
+
+cn@cn-Alienware-15:~$ rsync --port 8730 -avzP cf@192.168.3.100::rsync/ip.info ./
+Password: 
+receiving incremental file list
+ip.info
+          1,094 100%    1.04MB/s    0:00:00 (xfr#1, to-chk=0/1)
+
+    sent 72 bytes  received 537 bytes  174.00 bytes/sec
+    total size is 1,094  speedup is 1.80
+cn@cn-Alienware-15:~$ 
+
+6. 常见的一些问题
+    a）如果所有的可能都不能解决问题，则可以考虑iptables，selinux
+    b）配置文件默认是/etc/rsyncd.conf，如果要指定自定义的配置文件应该如何操作。
+    假如你的自定义配置文件的位置为/etc/rsync.cfg，则使用如下命令即可
+    rsync --daemon --config=/etc/rsync.cfg

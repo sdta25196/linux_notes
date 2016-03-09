@@ -1,0 +1,24 @@
+NAME
+curl - transfer a URL
+
+SYNOPSIS
+      curl [options] [URL...]
+
+DESCRIPTION
+     curl  is  a tool to transfer data from or to a server, using one of the supported protocols (HTTP, HTTPS, FTP, FTPS,  SCP,  SFTP,  TFTP,  DICT, TELNET,  LDAP  or  FILE).  The command is designed to work without user interaction.  curl offers a busload of useful tricks like proxy support, user authen- tication,  FTP upload, HTTP post, SSL connections, cookies, file trans- fer resume and more. As you will see below, the number of features will make your head spin!  curl  is  powered  by  libcurl  for  all transfer-related features. See libcurl(3) for details.
+
+ -I/--head
+   (HTTP/FTP/FILE) Fetch the HTTP-header only! HTTP-servers feature the command HEAD which this uses to get nothing but  the  header of  a  document.  When used on a FTP or FILE file, curl displays the file size and last modification time only.
+
+[root@server ~]# curl -I file:////root/1.txt
+Content-Length: 820
+Accept-ranges: bytes
+Last-Modified: Mon, 18 Jan 2016 23:12:46 GMT
+[root@server ~]#
+
+-x/--proxy <proxyhost[:port]>
+      Use  the  specified HTTP proxy. If the port number is not speci- fied, it is assumed at port 1080.  
+      This option overrides existing environment  variables  that  set the  proxy  to use. If there’s an environment variable setting a proxy, you can set proxy to "" to override it.  
+      Note that all operations that are performed over  a  HTTP  proxy will  transparently  be converted to HTTP. It means that certain protocol specific operations might not be available. This is not the  case  if you can tunnel through the proxy, as done with the -p/--proxytunnel option.  
+      Starting with 7.14.1, the proxy host can be specified the  exact same  way as the proxy environment variables, including the pro- tocol prefix (http://) and the embedded user + password.  
+    If this option is used several times, the last one will be used.

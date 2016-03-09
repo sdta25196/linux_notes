@@ -7,3 +7,4 @@
     rsync --port 8730 -avzP --password-file=/etc/rsync_passwd.cfg cf@192.168.3.100::rsync/ /tmp
 
 3. host allow=192.168.3.17 192.168.3.66 多个ip用空格分开，如果你的ip不在允许的范围内，则不可以连接
+    也可以写成一个网段的格式，如192.168.3.0/24

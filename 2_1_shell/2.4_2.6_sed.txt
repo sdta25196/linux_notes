@@ -66,6 +66,23 @@ sed 's#.*$#&login#g' file_name			#在所有的行后追回login
 sed 's#[a-zA-Z]##g' file_name			#把所有的字母都删掉
 sed 's#[^0-9A-Za-z]##g' file_name		#只保留数字和字母，也就是把所有的非数字、字母都给删掉
 sed -r 's#(^[0-9a-zA-Z]+)(:.*:)(.*$)#\3\3\1#g' file_name #这里，前面的3个括号分别表示3个部分，最终的结果会把3的位置和1的位置互换
+sed -n '/user/p; /root/p' file_name     #会把含有user，root的行都会打印出来，分号用来表示一个表达式
+#如果一行中会同时匹配两个关键字，那么此行就会被打印两次，这个和CLI中的分号效果是一样的。不同与或“｜”，如下
+cn@cn-Alienware-15:~/Documents/git/review_notes_after_class/2_1_shell$ sed -nr '/sshd/p; /gdm/p' passwd.txt 
+gdm:x:123:135:Gnome Display Manager:/var/lib/gdm:/bin/false
+sshd:x:gdm124:65534::/var/run/sshd:/usr/sbin/nologin
+sshd:x:gdm124:65534::/var/run/sshd:/usr/sbin/nologin
+cn@cn-Alienware-15:~/Documents/git/review_notes_after_class/2_1_shell$ sed -nr '/sshd|gdm/p' passwd.txt 
+gdm:x:123:135:Gnome Display Manager:/var/lib/gdm:/bin/false
+sshd:x:gdm124:65534::/var/run/sshd:/usr/sbin/nologin
+cn@cn-Alienware-15:~/Documents/git/review_notes_after_class/2_1_shell$ 
+cn@cn-Alienware-15:~/Documents/git/review_notes_after_class/2_1_shell$ sed -n -r '/root/p; /\/gdm:\/bin\/false/p' passwd.txt 
+root:x:0:0:root:/root:/bin/bash
+gdm:x:123:135:Gnome Display Manager:/var/lib/gdm:/bin/false
 
-
-
+把/etc/passwd文件第一段username和最后一段shell调换。
+sed -r 's/([^:]+)(:.*:)([^:]+)/\3\2\1/g' /etc/passwd
+解释：sed -r 's/([^:]+)(:.*:)([^:]+)/\3\2\1/' /etc/passwd
+([^:]+) ：是从第一个字符开始，一直往后进行匹配，直到遇到：号为止。做为第一部分
+(:.*:)：将分号作为开始和结尾匹配符合条件的最长的字符串作为第二部分。
+([^:]+)：这第三部分是不是以前面两部分为基础上，只要这一部分能让它匹配多个字符即可。

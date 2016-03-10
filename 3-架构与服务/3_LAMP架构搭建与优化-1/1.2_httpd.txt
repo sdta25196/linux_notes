@@ -34,3 +34,9 @@ mv apr-1.5.2/ apr
 mv apr-util-1.5.4/ apr-util
 ./configure --prefix=/usr/local/apache4 --with-included-apr --enable-so --enable-deflate=shared --enable-expire    s=shared --enable-rewrite=shared --with-pcre
 
+也可以通过以下步骤来解决
+./configure --prefix=/usr/local/apache2 --with-apr=/usr/local/apr-1.5.2/ --with-apr-util=/usr/local/apr-util-1.5.4/ --enable-so --enable-deflate=shared --enable-expires=shared --enable-rewrite=shared --with-pcre=/usr/local/pcre2/bin/pcre2-config
+
+常见的问题；
+如果你的httpd服务正常启动。但是遇到了403错误，而webroot的权限也是正确的，要如何处理
+    这个问题基本上就是httpd.conf文件配置的问题，把Deny fron all，修改为Allow from all，重新启动httpd服务就可以了。

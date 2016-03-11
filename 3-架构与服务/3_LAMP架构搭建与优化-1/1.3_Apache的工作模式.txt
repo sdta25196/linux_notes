@@ -1,0 +1,53 @@
+http://blog.sina.com.cn/s/blog_85f2ed8301017x73.html
+http://www.cnblogs.com/fnng/archive/2012/11/20/2779977.html
+1. prefork
+    [root@server apache2]# ./bin/apachectl -l
+    Compiled in modules:
+    core.c
+    mod_authn_file.c
+    mod_authn_default.c
+    mod_authz_host.c
+    mod_authz_groupfile.c
+    mod_authz_user.c
+    mod_authz_default.c
+    mod_auth_basic.c
+    mod_include.c
+    mod_filter.c
+    mod_log_config.c
+    mod_env.c
+    mod_setenvif.c
+    mod_version.c
+    prefork.c
+    http_core.c
+    mod_mime.c
+    mod_status.c
+    mod_autoindex.c
+    mod_asis.c
+    mod_cgi.c
+    mod_negotiation.c
+    mod_dir.c
+    mod_actions.c
+    mod_userdir.c
+    mod_alias.c
+    mod_so.c
+可以看出当前的工作模式是prefork模式，可以看到主进程是以root用户来运行的，prefork是以子进程的方式运行的，其中的一个进程出问题后并不会影响到其它的进程，缺点就是占用资源过多。进程之间都有独立的内存空间。
+进程是重量级的，线程是轻量级的
+[root@server apache2]# ps aux  | grep httpd
+root      1323  0.0  0.1   4200  1932 ?        Ss   08:29   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1561  0.0  0.1   4200  1640 ?        S    08:32   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1562  0.0  0.0   4200  1096 ?        S    08:32   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1563  0.0  0.1   4200  1636 ?        S    08:32   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1564  0.0  0.1   4200  1636 ?        S    08:32   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1565  0.0  0.0   4200  1096 ?        S    08:32   0:00 /usr/local/apache2/bin/httpd -k start
+daemon    1566  0.0  0.0   4200  1096 ?        S    08:33   0:00 /usr/local/apache2/bin/httpd -k start
+root      1646  0.0  0.0   6036   804 pts/1    S+   08:55   0:00 grep --color -i httpd
+
+
+2. worker
+    worker也有子进程，子进程下面还有线程，worker是以线程的方式启动的，线程之间可以共享内存，在处理高并发的时候优势非常的明显，由于它们之间是共享的，所以如题一个线程出问题势必会影响到其它的的线程。
+
+3. event
+    event是worker的升级版，比worker更具有优势，也是以线程的方式，在性能方面（比如长连接）会比worker更好一点
+
+4. 如何改变Apache的工作方式，
+2.2.29默认是prefork工作模式，在编译的时候加上-with-mpm=worker，就可更改为worker工作模式

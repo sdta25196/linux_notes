@@ -14,7 +14,7 @@ DESCRIPTION
 Content-Length: 820
 Accept-ranges: bytes
 Last-Modified: Mon, 18 Jan 2016 23:12:46 GMT
-[root@server ~]#
+[root@server ~]# curl -x61.135.169.125:80 www.baidu.com
 
 -x/--proxy <proxyhost[:port]>
       Use  the  specified HTTP proxy. If the port number is not speci- fied, it is assumed at port 1080.  

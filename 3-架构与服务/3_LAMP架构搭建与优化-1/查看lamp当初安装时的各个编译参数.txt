@@ -1,0 +1,8 @@
+1. mysql
+    /usr/local/mysql/bin/mysqlbug | grep config
+2. apache
+    cat /usr/local/apache2/build/config.nice
+3. php
+    /usr/local/php/bin/php -i | grep configure; or used the builtin function phpinfo();
+4. nginx
+    /usr/local/nginx/sbin/nginx -V

@@ -1,0 +1,32 @@
+1. Configuration the /usr/local/apache2/conf/extra/httpd-vhosts.conf
+<VirtualHost *:80>
+    ServerAdmin jusontech@gmail.com
+    DocumentRoot "/data/www/"
+    ServerName www.cf.cc
+    ServerAlias www.3201.cc
+    #ErrorLog "logs/dummy-host.example.com-error_log"
+    #CustomLog "logs/dummy-host.example.com-access_log" common
+    <Directory /data/www/1>
+        AllowOverride AuthConfig
+        AuthName "Authentification Section"
+        AuthType Basic
+        AuthUserFile /data/.htppasswd
+        require valid-user
+    </Directory>
+</VirtualHost>
+
+
+#custom your PATH
+vi /etc/profile.d/path.sh
+#!/bin/bash
+PATH=$PATH:/usr/local/mysql/bin/:/usr/local/apache2/bin/:/usr/local/php/bin
+
+#create a user and save the security info to /data/.htpasswd
+htpasswd -c /data/.htpasswd user1 
+#如果再新加一个用户，则不需要用-c选项，如果用的话，就会把原来的给覆盖掉。
+htpasswd /data/.htpasswd user2
+cat /data.htpasswd
+user1:KaHmoS1cHAcQM
+user2:ndVVJn4CmCrAk
+
+

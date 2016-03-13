@@ -1,0 +1,47 @@
+1.什么是URI
+比如这个网址，整个网址叫URL，域名后面的就是URI，static/image/smiley/default/kiss.gif，http://www.cf.cc/static/image/smiley/default/kiss.gif
+
+<VirtualHost *:80>
+    ServerAdmin jusontech@gmail.com
+    DocumentRoot "/data/www/"
+    ServerName www.cf.cc
+    ServerAlias www.aaa.cc
+    ServerAlias www.bbb.cc
+
+    #把所有的文件格式定义为一种类型，下面的image-request，只是一个标识， 写什么名字并没有严格的规定
+    SetEnvIf    Request_URI     ".*\.gif$"  partten
+    SetEnvIf    Request_URI     ".*\.css$"  partten
+    SetEnvIf    Request_URI     ".*\.png$"  partten
+    SetEnvIf    Request_URI     ".*\.bmp$"  partten
+    SetEnvIf    Request_URI     ".*\.swf$"  partten
+    SetEnvIf    Request_URI     ".*\.js$"   partten
+    SetEnvIf    Request_URI     ".*\.jpg$"  partten
+
+    SetEnvIf    Request_URI     ".*\.gif$"  image-request
+    SetEnvIf    Request_URI     ".*\.css$"  image-request
+    SetEnvIf    Request_URI     ".*\.png$"  image-request
+    SetEnvIf    Request_URI     ".*\.bmp$"  image-request
+    SetEnvIf    Request_URI     ".*\.swf$"  image-request
+    SetEnvIf    Request_URI     ".*\.js$"   image-request
+    SetEnvIf    Request_URI     ".*\.jpg$"  image-request
+
+    ErrorLog "|/usr/local/apache2/bin/rotatelogs -l /usr/local/apache2/logs/www.cf.cc-error_%Y%m%d_log 86400"
+    # env=!image-request[[=!两边不可以有空格，否则语法检测会报错的]]，就是说如果不是image-request的类型都记录日志，反过来也就是说如果写为env = image-request，那么就只记录image-request的日志
+    CustomLog "|/usr/local/apache2/bin/rotatelogs -l /usr/local/apache2/logs/www.cf.cc-access_%Y%m%d_log 5M" combined env=!image-request
+
+    <IfModule mod_rewrite.c>
+            RewriteEngine   on
+            RewriteCond     %{HTTP_HOST} ^www.aaa.cc$ [OR]
+            RewriteCond     %{HTTP_HOST} ^www.bbb.cc$ 
+        RewriteRule     ^/(.*)$ http://www.cf.cc/$1 [R=301,L]
+    </IfModule>
+
+    <Directory /data/www/admin>
+        AllowOverride AuthConfig
+        AuthName "Please input the correct username and password. Thank you!"
+        AuthType Basic
+        AuthUserFile /data/.htpasswd
+        require valid-user
+    </Directory>
+</VirtualHost>
+

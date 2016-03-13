@@ -1,0 +1,37 @@
+1. Download file ,official website is http://www.comsenz.com/downloads/install/discuzx#down_open
+    wget http://download.comsenz.com/DiscuzX/3.2/Discuz_X3.2_SC_GBK.zip
+
+2. mkdir /date/www; 
+    cp Discuz* /data/www; 
+    unzip Discu*; 
+    cd Discu*;
+    mv upload/* .
+    rm -rf upload/ readme/ util* Discuz*;
+
+3. Configuration Virtual Host
+    vi /usr/local/apache2/conf/extra/httpd-vhosts.conf
+    <VirtualHost *:80>
+         serverAdmin jusontech@gmail.com
+         DocumentRoot "/data/www/"
+         ServerName www.cf.cc
+         ServerAlias www.3201.com
+         #ErrorLog "logs/dummy-host.example.com-error_log"
+         #CustomLog "logs/dummy-host.example.com-access_log" common
+      </VirtualHost>
+    ############ Configuration Comnpleted... ###########
+
+4. Install Discuz! 
+mysql>
+    create database discuz;
+    grant all on discuz.* to 'fd'@'localhost' identified by 'changfeng';
+    Edit you client hosts file; if you used linux, type this command;
+    vi /etc/hosts ; add two lines to this file, example
+    192.168.3.100 www.cf.cc
+    192.168.3.100 www.3201.com
+
+    http://www.cf.cc
+    
+    then type your database name and correct user name and password. when all of all is okay, click the next, good luck!
+
+http://www.apelearn.com/bbs/thread-10376-1-1.html
+

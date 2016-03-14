@@ -1,0 +1,53 @@
+编辑文件：/usr/local/php/etc/php.ini
+
+1.禁用一些模块，降低风险
+	disable_functions =
+
+2.显示错误信息
+	display_errors = On ;;;如果打开此选项则会在客户端显示错误的具体内容，一般是不需要打开的
+
+3.错误日志记录
+	log_errors = On		;;;打开错误日志记录的开关，不打开是不会记录错误日志的。
+	error_log = /usr/local/php/logs/php_errors.log	;;;这里要使用绝对路径，且保存目录存在并月apache用户具有可写的权限，最好是改为777
+
+	[root@MINIMAL ~]# ls  /usr/local/php/logs/
+	ls: cannot access /usr/local/php/logs/: No such file or directory
+	[root@MINIMAL ~]# mkdir !$
+	mkdir /usr/local/php/logs/
+	[root@MINIMAL ~]# chmod 777 !$
+	chmod 777 /usr/local/php/logs/
+
+4. 配置日志的级别
+	error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+	改为如下
+	error_reporting = E_ALL & ~E_NOTICE	;;;~表示取反的意思，&表示的是and的意思
+
+5. open_basedir，安全选项，限制用户只能在某个目录下活动
+	open_basedir = /var/www:/tmp ;;;可以配置多个，如果有配置错误日志的话，可以具体参考日志记录信息
+
+6. 也可以在主配置文件里面的每个虚拟主机里面做限定，这个更加灵活一点，如下 ：
+<VirtualHost *:80>
+    ServerAdmin webmaster@dummy-host.example.com
+    DocumentRoot "/var/www/"
+    ServerName www.cf.cc
+    ServerAlias www.c.cc
+    ErrorLog "logs/dummy-www.cf.cc-error_log"
+    CustomLog "logs/dummy-www.cf.cc-access_log" common
+	
+    php_admin_value open_basedir "/var/www/:/tmp/"
+</VirtualHost>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

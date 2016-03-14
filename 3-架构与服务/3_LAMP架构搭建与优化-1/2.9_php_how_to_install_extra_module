@@ -1,0 +1,97 @@
+2.9_php_how_to_install_extra_module
+
+1. 编译php扩展模块，在php的安装源码包中有一个ext的目录，里面就是放在php的扩展模块。
+cd /usr/local/src/php*/ext/curl
+
+[root@MINIMAL curl]# ls
+config.m4  config.w32  CREDITS  curl.dsp  interface.c  multi.c  package.xml  php_curl.h  streams.c  tests
+[root@MINIMAL curl]# /usr/local/php/bin/phpize
+Configuring for:
+PHP Api Version:         20100412
+Zend Module Api No:      20100525
+Zend Extension Api No:   220100525
+Cannot find autoconf. Please check your autoconf installation and the
+$PHP_AUTOCONF environment variable. Then, rerun this script.
+####这里出错了，解决方法如下，yum install -y m4 autoconf
+
+[root@MINIMAL curl]# ls
+acinclude.m4  build         config.m4   configure.in  CREDITS   install-sh   ltmain.sh        missing        multi.c      php_curl.h     streams.c
+aclocal.m4    config.guess  config.sub  config.w32    curl.dsp  interface.c  Makefile.global  mkinstalldirs  package.xml  run-tests.php  tests
+[root@MINIMAL curl]#
+
+####Install Extension Module curl
+./configure --with-php-config=/usr/local/php/bin/php-config
+make
+[root@MINIMAL curl]# echo $?
+0
+[root@MINIMAL curl]# make install
+Installing shared extensions:     /usr/local/php/lib/php/extensions/no-debug-zts-20100525/
+[root@MINIMAL curl]#
+
+####查看php的扩展模块，和刚刚make install安装的扩展库是一个位置
+[root@MINIMAL curl]# /usr/local/php/bin/php -i | grep -i extension_dir
+extension_dir => /usr/local/php/lib/php/extensions/no-debug-zts-20100525 => /usr/local/php/lib/php/extensions/no-debug-zts-20100525
+sqlite3.extension_dir => no value => no value
+[root@MINIMAL curl]#
+
+####编辑php.ini配置文件，搜索extension_dir可以查看扩展模块的存放路径，这个默认不需要更改，再搜索extension，打到类似下面模式的，在后面追加一行即可
+vi /usr/local/php/etc/php.ini
+;extension=php_pdo_oci.dll
+;extension=php_pdo_odbc.dll
+;extension=php_pdo_pgsql.dll
+;extension=php_pdo_sqlite.dll
+;extension=php_pgsql.dll
+;extension=php_pspell.dll
+;extension=php_shmop.dll
+extension=curl.so
+
+####类似下面的才是动态加载模块
+[root@MINIMAL memcache-2.2.3]# grep '^extension=curl.so' /etc/php.ini
+extension=curl.so
+
+####练习，手动编译安装memcached，遇到的错误如下。
+cd /usr/local/src/
+wget http://www.lishiming.net/data/attachment/forum/memcache-2.2.3.tgz
+tar zxf memcache-2.2.3.tgz
+cd memcache-2.2.3
+/usr/local/php/bin/phpize
+yum install -y m4 autoconf
+./configure  --prefix=/usr/local/memcached  --with-php-config=/usr/local/php/bin/php-config
+echo $?
+0
+make  ####这里开始出错了
+/usr/local/src/memcache-2.2.3/memcache.c: In function ‘php_mmc_connect’:
+/usr/local/src/memcache-2.2.3/memcache.c:1902: error: ‘le_memcache_poolTSRMLS_CC’ undeclared (first use in this function)
+/usr/local/src/memcache-2.2.3/memcache.c:1902: error: (Each undeclared identifier is reported only once
+/usr/local/src/memcache-2.2.3/memcache.c:1902: error: for each function it appears in.)
+/usr/local/src/memcache-2.2.3/memcache.c:1902: error: too few arguments to function ‘zend_list_insert’
+/usr/local/src/memcache-2.2.3/memcache.c:1919: error: too few arguments to function ‘zend_list_insert’
+/usr/local/src/memcache-2.2.3/memcache.c: In function ‘zif_memcache_add_server’:
+/usr/local/src/memcache-2.2.3/memcache.c:1975: error: too few arguments to function ‘zend_is_callable’
+/usr/local/src/memcache-2.2.3/memcache.c:2003: error: too few arguments to function ‘zend_list_insert’
+/usr/local/src/memcache-2.2.3/memcache.c: In function ‘zif_memcache_set_server_params’:
+/usr/local/src/memcache-2.2.3/memcache.c:2059: error: too few arguments to function ‘zend_is_callable’
+/usr/local/src/memcache-2.2.3/memcache.c: In function ‘mmc_find_persistent’:
+/usr/local/src/memcache-2.2.3/memcache.c:2159: error: too few arguments to function ‘zend_list_insert’
+/usr/local/src/memcache-2.2.3/memcache.c:2177: error: too few arguments to function ‘zend_list_insert’
+
+解决方法如下：
+错误1：/usr/local/src/memcache-2.2.3/memcache.c:2159: error:too few arguments to function‘zend_list_insert’
+解决方法：百度后：关于该错误的帖子很多，方法一致,编辑“memcache.c”文件
+#vimmemcache
+将错误信息提示的行中“zend_list_insert”的值(pool,le_memcache_pool)改为(pool,le_memcache_pool TSRMLS_CC)即可
+
+
+错误2：/usr/local/src/memcache-2.2.3/memcache.c:1975: error:too few arguments to function‘zend_is_callable’
+解决方法：这个错误各种百度就是找不到原因，无奈之下自己随便试了下，结果成功了！
+根据提示信息找到所在行：if(!zend_is_callable(failure_callback, 0,NULL,))，翻译上面错误信息，提示函数少参数，于是我在NULL后面又加了NULL就变成了if(!zend_is_callable(failure_callback, 0, NULL,NULL))；
+到此make , make install一切正常。编辑php.ini配置文件后，也可以查看到加载到的动态模块memcache.so
+
+
+
+
+
+
+
+
+

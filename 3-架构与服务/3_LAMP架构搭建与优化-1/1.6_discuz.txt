@@ -25,13 +25,22 @@ mysql>
     create database discuz;
     grant all on discuz.* to 'fd'@'localhost' identified by 'changfeng';
     Edit you client hosts file; if you used linux, type this command;
+    
     vi /etc/hosts ; add two lines to this file, example
     192.168.3.100 www.cf.cc
     192.168.3.100 www.3201.com
 
     http://www.cf.cc
     
-    then type your database name and correct user name and password. when all of all is okay, click the next, good luck!
-
+    SQL历史命令可以查看~/.mysql_history这个文件 
+    
+5. then type your database name and correct user name and password. when all of all is okay, click the next, good luck!
+NOTICE: grant all on discuz.* to 'fd'@'localhost' identified by 'changfeng';
+####这里的名字要和你建表的时候使用的主机名是一样的，否则会提示没有权限访问，或者是各种乱七八糟的错误。
+数据库服务器: 	localhost	数据库服务器为空，或者格式错误，请检查
+####下面那几 项按照正常的填写就可以
+数据库名: 		
+数据库用户名: 		
+数据库密码: 		
 http://www.apelearn.com/bbs/thread-10376-1-1.html
 

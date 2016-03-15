@@ -41,6 +41,10 @@ NOTICE: grant all on discuz.* to 'fd'@'localhost' identified by 'changfeng';
 ####下面那几 项按照正常的填写就可以
 数据库名: 		
 数据库用户名: 		
-数据库密码: 		
+数据库密码:
+
+
+refer to:
 http://www.apelearn.com/bbs/thread-10376-1-1.html
+Discuz安全配置   http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=8060&fromuid=6891
 

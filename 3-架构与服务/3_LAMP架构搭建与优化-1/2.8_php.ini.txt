@@ -1,7 +1,11 @@
 编辑文件：/usr/local/php/etc/php.ini
+如果忘记配置文件在那里，可以使用下面的命令查找到。
+[root@100 www]# php -i | head -20 | grep configuration -A 3
+Configuration File (php.ini) Path => /usr/local/php/etc
+Loaded Configuration File => /usr/local/php/etc/php.ini
 
 1.禁用一些模块，降低风险
-	disable_functions =
+	disable_functions = eval,assert,popen,passthru,escapeshellarg,escapeshellcmd,passthru,exec,system,chroot,scandir,chg rp,chown,escapeshellcmd,escapeshellarg,shell_exec,proc_get_status,ini_alter,ini_restore,dl,pfsock open,openlog,syslog,readlink,symlink,leak,popepassthru,stream_socket_server,popen,proc_open,p roc_close 
 
 2.显示错误信息
 	display_errors = On ;;;如果打开此选项则会在客户端显示错误的具体内容，一般是不需要打开的

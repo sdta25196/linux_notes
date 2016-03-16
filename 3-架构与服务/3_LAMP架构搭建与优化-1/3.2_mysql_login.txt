@@ -1,0 +1,21 @@
+1. client login configuration
+SERVER:
+    #### it means grant all database and all tables to root on host 192.168.3.17, password is ubuntu;
+    grant all on *.* to 'root'@'192.168.3.17' identified by 'ubuntu';
+    select * from mysql.user where host='192.168.3.17'\G;
+    ### revoke the authentification 
+    revoke all on *.*  from 'root'@'192.168.3.17' identified by 'ubuntu';
+CLIENT:
+    #### login command
+    mysql -uroot -P3306 -p'ubuntu'
+    #### if bellow command is not effective, please used that before.
+    mysql -uroot -p'ubuntu'
+
+SQL EXAMPLE:
+    mysql> select user();
+
+2. used secket to login mysql
+    mysql -uroot -S /tmp/mysock.sock -p'jjjj'
+    
+3. forbidden mysql auto resolve ipaddr to hostname, you just edit /etc/my.conf under [mysqld] add that line, then restart your mysqld service.
+    skip-name-resolve

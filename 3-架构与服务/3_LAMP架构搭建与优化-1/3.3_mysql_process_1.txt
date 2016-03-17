@@ -18,7 +18,14 @@ USE changfeng;
 CREATE TABLE tb1 (
 	`id` int(4),
 	`name` char(40)
-) ENGINE=MyISAM DEFAULT CHARSET=gbk;
+        ) ENGINE=MyISAM 
+        DEFAULT CHARSET=gbk;
+or
+CREATE TABLE changfeng.tb2(
+        `id` int(4), 
+        `name` char(40)
+        ) engine=myisam 
+        DEFAULT CHARSET=gbk;
 ;show tables;
 SHOW TABLES;
 DESC tb1;

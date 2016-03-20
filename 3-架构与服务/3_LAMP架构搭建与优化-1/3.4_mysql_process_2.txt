@@ -18,7 +18,7 @@ SET GLOBAL max_connections=200;
 SHOW VARIABLES LIKE 'max_connecti%';
 
 ;修改一张表
-REPARI DATABASE.TABLE;
+REPAIR DATABASE.TABLE;
 
 ;查看错误日志
 一般都在$datadir目录下，以主机名开始.err结尾的，对于排障非常的有效。

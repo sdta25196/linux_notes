@@ -50,4 +50,5 @@ DROP TABLE tb1;
 ;delete a database
 DROP DATABASE changfeng;
 UPDATE tb1 SET NAME='AAA' WHERE ID=2 AND NAME IS NULL; 
+#经过测试，下面的这个命令语法错误
 insert into tb1 values(`name`,`id`) values('55',4),('55',5);

@@ -4,7 +4,7 @@ NOTICE: Order allow,deny is the key words, so you can first deny or allow, if yo
 shall we...
 
 <VirtualHost *:80>
-    ServerAdmin jusontech@gmail.com
+    ServerAdmin jusuntecho@gmail.com
     DocumentRoot "/data/www/"
     ServerName www.cf.cc
     ServerAlias www.aaa.cc
@@ -21,7 +21,7 @@ shall we...
 
 if you to to this, for example, It's won't be effective, because the Allow is first to executed.
 <VirtualHost *:80>
-    ServerName jusontech@gmail.com
+    ServerName jusuntecho@gmail.com
     DocumentRoot "/data/www"
     ServerName www.cf.cc
     ServerName www.aaa.cc

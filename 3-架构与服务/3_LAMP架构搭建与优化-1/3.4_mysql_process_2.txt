@@ -8,7 +8,7 @@ GRANT ALL ON discuz.* TO 'user1'@'%' IDENTIFIED BY 'pass_word';
 ;有时候在做了一些权限操作之后，数据还可能在内存中，没有及时生效。可以使用下面的命令来刷新一下权限
 FLUSH PRIVILEAGES;
 ;查看队列
-SHOW PROCESSLIST;
+SHOW PRIVILEGES;
 ;查看变量
 SHOW VARIABLES;
 ;有时由于其它原因不能重启mysql服务或者是重启非常慢会影响业务，但是又有某些参数需要做调整，此时可以登录mysql直接配置。

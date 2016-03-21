@@ -41,6 +41,8 @@ Loaded Configuration File => /usr/local/php/etc/php.ini
     php_admin_value open_basedir "/var/www/:/tmp/"
 </VirtualHost>
 
+7. 使用open_basedir需要注意一下，open_basedir是以字符串来限定目录的，和linux下文件路径还不太一样，比如你设备的open_basedir路径为/tmp/usr，那么/tmp/usr1或者是/tmp/usr23434都可以被访问到（前提是这些目录存在的话），如果只是想把用户限制在/tmp/usr这个目录下，那么就只能配置成/tmp/usr/，以/来封口，表示这个目录下的内容。
+
 
 
 

@@ -1,0 +1,118 @@
+1、nginx的访问控制和apache的不一样，apache需要有一个order来决定先deny还是allow。
+a）如果是以白名单的方式，假如只允许127.0.0.1，其它的全部拒绝，可以这么写
+	allow 127.0.0.1;
+	deny all;
+b）如果是以黑名单的方式，则只需要写deny就可以了，假如只拒绝127.0.0.1，其它的全部都放行，则可以这么写
+	deny 127.0.0.1;
+	
+	
+	
+2、配置文件
+cat /usr/local/nginx/conf/vhosts/www.cf.com.conf
+server
+{
+    listen 80;
+    server_name www.cf.com www.tlm.org www.zw.com ;
+    #配置重定向
+    if ($host != 'www.cf.com')
+    {
+        rewrite ^/(.*)$ http://www.cf.com/$1 permanent;
+    }
+    index index.html index.htm index.php;
+    root /data/www/;
+    #启用日志记录功能
+    access_log /usr/local/nginx/logs/nginx-access.log combined_realip;
+
+    #不记录指定类型的日志
+    location ~ .*\.(gif|ico|jpg|jpeg|png|bmp|swf|flv|rar|zip|gz|bz2)$
+    {
+        access_log off;
+        #配置缓存时间
+        expires 15d;
+        #nginx配置防盗链
+        valid_referers none blocked *.cf.com *.tlm.org *.zw.com;
+        if ($invalid_referer)
+        {
+            #deny all;
+            return 999; #经过测试发现客户端的状态码和这里的是一致的。
+        }
+    }
+    
+    #配置缓存时间
+    location ~ \.(js|css)
+    {
+        access_log off;
+        expires 3h;
+    }
+
+    location ~ static
+    {
+        access_log off;
+    }
+
+    location ~ (static|cache) 
+    {
+        access_log off;
+    }
+
+    #访问控制，全局设置
+    deny 127.0.0.1;
+    deny 1.1.1.1;
+
+    #nginx用户认证
+    location ~ .*admin\.php$ {
+        #用户认证相关的配置
+        #auth_basic "nginx authentification web page";
+        #auth_basic_user_file /usr/local/nginx/conf/.htppasswd;
+        #nginx访问控制
+        allow 127.0.0.1;
+        allow 192.168.1.6;
+        #允许一个网段
+        #allow 127.0.0.0/24;
+        deny all;
+        include fastcgi_params;
+        fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+
+    location ~ \.php$ {
+    include fastcgi_params;
+#fastcgi_pass 127.0.0.1:9000;
+    fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+}
+
+3、测试
+[root@centos6dot7 logs]# curl -I -x127.00.00.1:80 www.cf.com/admin.php
+HTTP/1.1 200 OK
+Server: nginx/1.9.9
+Date: Mon, 21 Mar 2016 21:44:44 GMT
+Content-Type: text/html; charset=gbk
+Connection: keep-alive
+X-Powered-By: PHP/5.5.10
+Set-Cookie: sD1d_2132_saltkey=Aglx0eo7; expires=Wed, 20-Apr-2016 21:44:44 GMT; Max-Age=2592000; path=/; httponly
+Set-Cookie: sD1d_2132_lastvisit=1458593084; expires=Wed, 20-Apr-2016 21:44:44 GMT; Max-Age=2592000; path=/
+Set-Cookie: sD1d_2132_sid=LS4Hu3; expires=Tue, 22-Mar-2016 21:44:44 GMT; Max-Age=86400; path=/
+Set-Cookie: sD1d_2132_lastact=1458596684%09admin.php%09; expires=Tue, 22-Mar-2016 21:44:44 GMT; Max-Age=86400; path=/
+
+[root@centos6dot7 logs]# curl -I -x127.0.0.1:80 http://www.cf.com/
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Mon, 21 Mar 2016 21:44:56 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+测试结果说明，如果匹配规则越详细优先级就越高，详细说明如下，
+比如上面的配置中deny 127.0.0.1；但是可以匹配到www.cf.com/admin.php，那么这里的allow 127.0.0.1就会覆盖掉全局中的配置，最终的结果也是允许127.0.0.1访问admin.php全面的
+
+修改配置为，精确匹配的没有变动
+#访问控制，全局设置
+    deny 127.0.0.1;
+# allow 192.168.1.0/24;
+    deny all;
+    allow 192.168.1.6;
+测试结果为，最后允许的192.168.1.6访问状态码为403，验证了上面的结论

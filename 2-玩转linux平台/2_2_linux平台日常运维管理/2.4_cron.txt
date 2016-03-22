@@ -19,3 +19,27 @@ Step  values  can be used in conjunction with ranges.  Following a range with "<
 Names can also be used for the "month" and "day of  week"  fields.   Use the  first  three  letters  of the particular day or month (case doesn’t matter).  Ranges or lists of names are not allowed.  
 
 The "sixth" field (the rest of the line) specifies  the  command  to  be run.  The entire command portion of the line, up to a newline or % char- acter, will be executed by /bin/sh or by  the  shell  specified  in  the SHELL  variable  of  the  cronfile.   Percent-signs  (%) in the command, unless escaped with backslash (\), will be changed into newline  charac- ters,  and  all  data  after  the first % will be sent to the command as standard input.  
+
+Linux 任务计划功能的操作都是通过 crontab 这个命令来完成的。其中常用的选项有:
+-u:指定某个用户,不加-u 选项则为当前用户
+-e:制定计划任务
+-l:列出计划任务
+-r:删除计划任务
+下面创建第一个任务计划了:
+[root@localhost ~]# crontab -e
+no crontab for root - using an empty one
+使用 crontab -e 来进行编写任务计划,这实际上是使用 vim 工具打开了 crontab 的配置文件,我们写下
+如下内容:
+01 10 05 06 3 echo "ok" > /root/cron.log
+每个字段的数字分表表示什么呢?从左到右,依次为:分,时,日,月,周,命令行。而上面的例子
+的含义是:在 6 月 5 日(这一天必须是星期 3)的 10 点 01 分执行命令 echo "ok" > /root/cron.log
+crontab -e 实际上是打开了―/var/spool/cron/username‖ (如果是 root 则打开的是/var/spool/cron/root)这个
+文件。使用的是 vim 编辑器,所以要保存的话则在命令模式下输入:wq 即可。但是,你千万不要直接去编
+辑那个文件,因为可能会出错,所以一定要使用 crontab -e 来编辑。查看已经设定的任务计划使
+用 crontab -l 命令:
+[root@localhost ~]# crontab -l
+01 10 05 06 3 echo "ok" > /root/cron.log
+删除计划任务要用 crontab -r
+[root@localhost ~]# crontab -r
+[root@localhost ~]# crontab -l
+no crontab for root

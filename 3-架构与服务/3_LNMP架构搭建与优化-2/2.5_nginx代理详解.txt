@@ -1,0 +1,36 @@
+1、代理配置文件
+vi /usr/local/nginx/conf/vhosts/proxy.conf
+server
+{
+    listen 80;
+    server_name www.baidu.com;
+
+    location /
+    {
+        proxy_pass http://61.135.169.121/;
+        #proxy_set_header Host $host;
+    }   
+}
+
+2、安装dig命令
+yum install bind* -y
+
+3、多个ip代理，实现负载均衡
+{
+    server 61.135.169.125:80;
+    server 61.135.169.121:80;
+}
+
+server
+{
+    listen 80;
+    server_name www.baidu.com;
+
+    location /
+    {
+        proxy_pass http://changfeng/;
+		proxy_set_header Host $host;
+		＃经过测试下面这行可加可不加		
+		proxy_set_header X-Real-IP $remote_addr;
+    }  
+}

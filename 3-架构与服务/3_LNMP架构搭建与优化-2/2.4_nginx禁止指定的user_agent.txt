@@ -1,0 +1,161 @@
+1、cat /usr/local/nginx/conf/vhosts/www.cf.com.conf
+server
+{
+    listen 80;
+    server_name www.cf.com www.tlm.org www.zw.com ;
+    #配置重定向
+    if ($host != 'www.cf.com')
+    {
+        rewrite ^/(.*)$ http://www.cf.com/$1 permanent;
+    }
+    index index.html index.htm index.php;
+    root /data/www/;
+    #启用日志记录功能
+    access_log /usr/local/nginx/logs/nginx-access.log combined_realip;
+
+    #不记录指定类型的日志
+    location ~ .*\.(gif|ico|jpg|jpeg|png|bmp|swf|flv|rar|zip|gz|bz2)$
+    {
+        access_log off;
+        #配置缓存时间
+        expires 15d;
+        #nginx配置防盗链
+        valid_referers none blocked *.cf.com *.tlm.org *.zw.com;
+        if ($invalid_referer)
+        {
+            #deny all;
+            return 999; #经过测试发现客户端的状态码和这里的是一致的。
+        }
+    }
+    
+    #配置缓存时间
+    location ~ \.(js|css)
+    {
+        access_log off;
+        expires 3h;
+    }
+
+    location ~ static
+    {
+        access_log off;
+    }
+
+    location ~ (static|cache) 
+    {
+        access_log off;
+    }
+
+    #访问控制，全局设置
+    #deny 127.0.0.1;
+    allow 192.168.3.0/24;
+    #deny all;
+
+    #nginx禁止指定的user agent
+    # if ($http_user_agent ~* 'aaa|bbb')，其中~*表示不区分大小写
+    if ($http_user_agent ~ 'aaa|bbb')
+    {
+        #return 403;
+        #如果不希望返回403，而是返回一些文字或者是图片，可以使用下面的方式实现
+        rewrite ^/ http://mat1.gtimg.com/www/austin/xr/title1_all.png;
+    }
+
+    #nginx用户认证
+    location ~ .*admin\.php$ {
+        #用户认证相关的配置
+        #auth_basic "nginx authentification web page";
+        #auth_basic_user_file /usr/local/nginx/conf/.htppasswd;
+        #nginx访问控制
+        allow 127.0.0.1;
+        allow 192.168.1.6;
+        #允许一个网段
+        #allow 127.0.0.%;
+        deny all;
+        include fastcgi_params;
+        fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+
+    location ~ \.php$ {
+    include fastcgi_params;
+#fastcgi_pass 127.0.0.1:9000;
+    fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+}
+
+2、测试，测试结果说明，只要包含指定的user agent就可以禁止访问
+[root@centos6dot7 ~]# curl -A "aaa" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:00 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+[root@centos6dot7 ~]# curl -A "aaaa" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:04 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+[root@centos6dot7 ~]# curl -A "2aaaa" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:09 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+[root@centos6dot7 ~]# curl -A "2aa3aa" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:15 GMT
+Content-Type: text/html
+Connection: keep-alive
+X-Powered-By: PHP/5.5.10
+location: forum.php
+
+[root@centos6dot7 ~]# curl -A "bbb" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:26 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+[root@centos6dot7 ~]# curl -A "bbbb" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 403 Forbidden
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:31 GMT
+Content-Type: text/html
+Content-Length: 168
+Connection: keep-alive
+
+[root@centos6dot7 ~]# curl -A "bb bb" -x127.0.0.1:80 www.cf.com -I
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.9.9
+Date: Wed, 23 Mar 2016 05:44:36 GMT
+Content-Type: text/html
+Connection: keep-alive
+X-Powered-By: PHP/5.5.10
+location: forum.php
+
+cat /usr/local/nginx/logs/nginx-access.log
+127.0.0.1 - [23/Mar/2016:13:50:20 +0800]www.cf.com "/" 301"-" "bb bb"
+127.0.0.1 - [23/Mar/2016:13:50:30 +0800]www.cf.com "/" 301"-" "aa"
+127.0.0.1 - [23/Mar/2016:13:50:34 +0800]www.cf.com "/" 403"-" "aaa"
+127.0.0.1 - [23/Mar/2016:13:50:44 +0800]www.cf.com "/" 301"-" "aa2a"
+127.0.0.1 - [23/Mar/2016:13:53:10 +0800]www.cf.com "/" 403"-" "aaa"
+127.0.0.1 - [23/Mar/2016:13:53:16 +0800]www.cf.com "/" 403"-" "aAa"
+127.0.0.1 - [23/Mar/2016:13:53:22 +0800]www.cf.com "/" 403"-" "aAA"
+
+3、如果不希望返回403，还是一个文本或者是图片，则可以这么做
+if ($http_user_agent ~ 'aaa|bbb')
+    {
+        rewrite ^/ http://www.example.com/nophoto.gif;
+    }
+

@@ -1,0 +1,87 @@
+ 1. www.pureftpd.org
+ wget http://downloads.sourceforge.net/project/pureftpd/Pure-FTPd/1.0.29/pure-ftpd-1.0.29.tar.gz?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fpureftpd%2Ffiles%2FPure-FTPd%2F1.0.29%2F&ts=1458786460&use_mirror=netcologne
+
+ 2、解压、编译、安装
+ tar zxf pure-ftpd-1.0.29.tar.gz
+ cd pure-ftpd-1.0.29
+ ./configure \
+     --prefix=/usr/local/pureftpd 
+     --without-inetd 
+     --with-altlog 
+     --with-puredb 
+     --with-throttling 
+     --with-peruserlimits  
+     --with-tls
+ echo $?
+ make
+ echo $?
+ make install
+ echo $0
+
+#创建配置文件目录
+ mkdir -p /usr/local/pureftpd/etc
+#复制配置文件样本
+ cp /usr/local/src/pure-ftpd-1.0.29/configuration-file/pure-ftpd.conf /usr/local/pureftpd/etc/
+#复制pureftpd启动脚本，.pl结尾的为perl编写的
+ cp /usr/local/src/pure-ftpd-1.0.29/configuration-file/pure-config.pl /usr/local/pureftpd/sbin/
+ chmod 755 /usr/local/pureftpd/sbin/pure-config.pl
+
+#编辑配置文件
+ChrootEveryone              yes
+BrokenClientsCompatibility  no
+MaxClientsNumber            50
+Daemonize                   yes
+MaxClientsPerIP             8
+VerboseLog                  no
+DisplayDotFiles             yes
+AnonymousOnly               no
+NoAnonymous                 no
+SyslogFacility              ftp
+DontResolve                 yes
+MaxIdleTime                 15
+#用户密码存放的位置
+PureDB                        /usr/local/pureftpd/etc/pureftpd.pdb
+LimitRecursion              3136 8
+AnonymousCanCreateDirs      no
+MaxLoad                     4
+AntiWarez                   yes
+Umask                       133:022
+#注意用户uid不能小于100
+MinUID                      100
+AllowUserFXP                no
+AllowAnonymousFXP           no
+ProhibitDotFilesWrite       no
+ProhibitDotFilesRead        no
+AutoRename                  no
+AnonymousCantUpload         no
+PIDFile                     /usr/local/pureftpd/var/run/pure-ftpd.pid
+MaxDiskUsage               99
+CustomerProof              yes
+
+#添加服务器端的ftp用户
+useradd -s /sbin/nologin -M admin
+
+#创建ftp目录，用来存放共享文件的
+mkdir -p /var/ftp
+
+#更改权限为操作ftp目录共享文件的用户,该目录为虚拟用户(客户端登入用户)的家目录，属主必须为指定的ftp系统用户
+chown -R admin:admin /var/ftp
+
+#创建ftp客户端登录用户和密码，以及映射共享目录，服务器端ftp用户, -u表示虚拟用户映射的系统用户为admin，所以ftp根目录的属主就必须为admin
+/usr/local/pureftpd/bin/pure-pw useradd ftpuser -u admin -d /var/ftp
+
+#重置虚拟用户密码
+/usr/local/pureftpd/bin/pure-pw passwd user_name
+
+#生成密码库文件,这条命令会在/usr/local/pureftpd/etc/目录下生成两个文件pureftpd.passwd  pureftpd.pdb
+/usr/local/pureftpd/bin/pure-pw mkdb
+
+#查看已经存在的映射关系，表现为客户端登录用户和服务器端映射目录
+/usr/local/pureftpd/bin/pure-pw list
+ftpuser             /var/ftp/./
+
+#删除一个ftp客户登录用户
+/usr/local/pureftpd/bin/pure-pw userdel ftpuser
+
+#启动pureftp服务
+/usr/local/pureftpd/sbin/pure-config.pl /usr/local/pureftpd/etc/pure-ftpd.conf

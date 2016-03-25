@@ -1,3 +1,14 @@
+「＃＃＃＃＃＃＃＃＃＃＃＃＃注意＃＃＃＃＃＃＃＃＃＃」配置文件后面一定不能有空格，可以通过这个命令去年尾行的空格
+sed -i 's/[ \t]*$//g' 1.txt
+如果出现了类似的错误，说明你的配置有问题，可以参考http://www.cnblogs.com/xia/archive/2012/04/13/2446078.html
+ls: ls: Login failed: 500 OOPS: bad bool value in config file for: anon_upload_enable
+
+错误排查：
+    a、配置问题，比如配置的尾行有空格或者是tab，用户名、配置文件路径等。
+    b、selinux、iptables
+    c、查看日志/var/log/secure
+    d、修改完配置后，没有及时重启服务，如[Delaying before reconnect: 36]
+
 1、创建一个虚拟用户对应的本地用户
     useradd -s /sbin/nologin virftp
     echo virftp | passwd virftp --stdin

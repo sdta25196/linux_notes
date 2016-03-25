@@ -30,9 +30,9 @@ server
     location /
     {
         proxy_pass http://changfeng/;
-		proxy_set_header Host $host;
-		＃经过测试下面这行可加可不加		
-		proxy_set_header X-Real-IP $remote_addr;
+	proxy_set_header Host $host;
+	＃经过测试下面这行可加可不加		
+	proxy_set_header X-Real-IP $remote_addr;
     }  
 }
 

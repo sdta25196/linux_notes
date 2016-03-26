@@ -1,0 +1,8 @@
+1. 编辑配置文件
+    vi /usr/local/tomcat/conf/server.xml
+    
+    找到Connector port＝8080，改为80
+        <Connector port="80" protocol="HTTP/1.1"
+            connectionTimeout="20000"
+        redirectPort="8443" />
+

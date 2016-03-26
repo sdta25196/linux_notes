@@ -1,0 +1,13 @@
+1. 下载地址
+	http://caucho.com/
+	
+2. 安装
+	tar zxf resin-pro-4.0.48.tar.gz
+	echo $?
+	./configure --prefix=/usr/local/resion --with-java=/usr/local/jdk1.8.0_77/
+	echo $?
+	make 
+	echo $?
+	make install
+	echo $?
+	

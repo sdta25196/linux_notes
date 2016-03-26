@@ -1,0 +1,19 @@
+1. 下载
+    wget http://apache.fayea.com/tomcat/tomcat-7/v7.0.68/bin/apache-tomcat-7.0.68.tar.gz
+
+2. 解压
+    tar zxf apache-tomcat-7.0.68.tar.gz 
+    mv apache-tomcat-7.0.68 /usr/local/tomcat
+
+3. 添加启动脚本
+    cp /usr/local/tomcat/bin/catlina.sh /etc/init.d/tomcat
+    vi /etc/init.d/tomcat
+    # 2345表示2345级别运行，56表示第56个启动，27表示第27个关闭
+    # chkconfig: 2345 56 27
+    # 这个描述不可少，否则不能成功添加到系统服务中
+    # description: is a protocol for secure remote shell access
+    #配置tomcat的家目录
+    CATALINA_HOME=/usr/local/tomcat
+    # 使这个配置生效，但是不加这一行也可以添加服务，建议添加，这是shell的一个库函数，里面有好多公用 函数
+    # source function library
+    . /etc/rc.d/init.d/functions

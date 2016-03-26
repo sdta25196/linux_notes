@@ -10,4 +10,131 @@
 	echo $?
 	make install
 	echo $?
-	
+
+3. 配置默认端口为80
+    vi /usr/local/resion/conf/resin.properties
+    找到app.http          : 8080 修改为 app.http          : 80
+    /etc/init.d/resin stop
+    /etc/init.d/resin start
+
+4. 修改虚拟主机
+    vi /usr/local/resion/conf/resin.xml
+    在<cluster id="app">这个cluster里面添加虚拟主机，在默认的<host ... >... ... </host>后面添加下面的配置
+   <host id="www.cf.com" root-directory=".">
+       <web-app id="/" root-directory="/var/www/resin">
+       </web-app>
+   </host>
+
+   /etc/init.d/resin stop
+   /etc/init.d/resin start
+
+5. 配置文件
+<resin xmlns="http://caucho.com/ns/resin"
+xmlns:resin="urn:java:com.caucho.resin">
+
+<resin:properties path="${__DIR__}/resin.properties" optional="true"/>
+
+<resin:if test="${properties_import_url}">
+<resin:properties path="${properties_import_url}"
+optional="true" recover="true"/>
+</resin:if>
+
+<log-handler name="" level="all" path="stdout:"
+timestamp="[%y-%m-%d %H:%M:%S.%s]"
+format=" {${thread}} ${log.message}"/>
+
+<logger name="" level="${log_level?:'info'}"/>
+
+<logger name="com.caucho.java" level="config"/>
+<logger name="com.caucho.loader" level="config"/>
+
+<resin:import path="${__DIR__}/health.xml"/>
+
+
+<resin:AdminAuthenticator>
+<user name="${admin_user}" password="${admin_password}"/>
+
+<resin:import path="${__DIR__}/admin-users.xml" optional="true"/>
+</resin:AdminAuthenticator>
+
+<cluster-system-key>${cluster_system_key}</cluster-system-key>
+
+<dependency-check-interval>${dependency_check_interval?:'2s'}</dependency-check-interval>
+
+<home-cluster>${home_cluster}</home-cluster>
+<home-server>${home_server}</home-server>
+<elastic-server>${elastic_server}</elastic-server>
+<elastic-dns>${elastic_dns}</elastic-dns>
+
+<cluster id="app">
+<server-multi id-prefix="app-" address-list="${app_servers}" port="6800"/>
+
+<host-default>
+<web-app-deploy path="webapps"
+expand-preserve-fileset="WEB-INF/work/**"
+multiversion-routing="${webapp_multiversion_routing}"
+path-suffix="${elastic_webapp?resin.id:''}"/>
+</host-default>
+
+<host-deploy path="hosts">
+<host-default>
+<resin:import path="host.xml" optional="true"/>
+</host-default>
+</host-deploy>
+
+<host id="" root-directory=".">
+<web-app id="/" root-directory="webapps/ROOT"/>
+</host>
+
+<host id="www.cf.com" root-directory=".">
+<web-app id="/" root-directory="/var/www/resin">
+</web-app>
+</host>
+
+<resin:if test="${resin_doc}">
+<host id="${resin_doc_host}" root-directory="${resin_doc_host}">
+<web-app id="/resin-doc" root-directory="${resin.root}/doc/resin-doc"/>
+</host>
+</resin:if>
+</cluster>
+
+<cluster id="web">
+<server-multi id-prefix="web-" address-list="${web_servers}" port="6810"/>
+
+<host id="" root-directory="web">
+<web-app id="">
+<resin:LoadBalance regexp="" cluster="app"/>
+</web-app>
+
+<web-app id="/async">
+<resin:LoadBalance regexp="" cluster="app"/>
+</web-app>
+</host>
+</cluster>
+
+<cluster id="memcached" xmlns:memcache="urn:java:com.caucho.memcached">
+<server-multi id-prefix="memcached-" address-list="${memcached_servers}" port="6820">
+<listen port="${memcached_port?:11211}"
+keepalive-timeout="600s" socket-timeout="600s">
+<memcache:MemcachedProtocol/>
+</listen>
+</server-multi>
+</cluster>
+
+<cluster id="proxycache">
+
+<server-multi id-prefix="proxycache-" address-list="${proxycache_servers}" port="6830"/>
+
+<host id="" root-directory="proxycache">
+<web-app id="">
+<resin:HttpProxy regexp=".*">
+
+<addresses>${backend_servers}</addresses>
+</resin:HttpProxy>
+</web-app>
+</host>
+
+</cluster>
+
+</resin>
+

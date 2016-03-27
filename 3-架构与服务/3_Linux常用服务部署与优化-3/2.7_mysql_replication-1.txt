@@ -1,0 +1,2 @@
+1. Replication
+	A --> change data --> bin_log --> transfer --> B --> replication_log --> change data

@@ -37,4 +37,8 @@
 
 6. cp mysql.server /etc/init.d/mysql ; chkconfig --add mysql ; chkconfig mysql on;
 
+7. vi /etc/init.d/mysqld，找到basedir=和datadir=这两行，修改为
+    basedir=/usr/local/mysql
+    datadir=/data/mysql
+
 7. service mysql start ; ps aux | grep mysql  ; netstat -lnp | grep mysql 

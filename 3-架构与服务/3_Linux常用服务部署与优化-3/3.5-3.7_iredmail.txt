@@ -1,0 +1,30 @@
+1. iRedMail 套件
+    postfix：发邮件
+    dovecot：收邮件
+    apache：web版的收、发邮件
+    mysql：数据存在mysql中
+    openldap：可选，存储数据
+    policyd：邮件黑、白名单
+    amavisd：杀毒、扫描垃圾邮件
+    roundcube：web端发邮件
+    awstat：日志分析
+    fail2ban：防止暴力破解
+    iRedAdmin：管理邮件，添加账户
+
+2. 软件下载
+    wget　https://bitbucket.org/zhb/iredmail/downloads/iRedMail-0.9.4.tar.bz2
+    tar jzvf iRedMail*
+    cd iRed*
+    cd pkgs
+    在iRedMail.sh和pkgs/get_all.sh脚本的首先添加IREDMAIL_MIRROR='http://42.159.241.31'，主要是因为它默认会去http://iredmail.org官网去下载信赖的包，但是现在官网已经不是这个网址了，所以需要修改为可用的镜像站点。如果已安装多次没有成功，则需要把/etc/yum.repo.d/目录下关于iredmail的.repo文件给删除掉，再重新安装就可以从指定站点下载信赖的包了。
+
+3. 安装完成后可以用下面的命令启动服务
+for s in httpd iredapd amavisd clamd postfix dovecot cbpolicyd spamassassin clam.amavisd saslauthd fail2ban;
+    do /etc/init.d/$s restart;
+done
+    
+4. iRedMail使用
+    
+4. 参考文档
+    http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=10552&pid=135093&page=1&extra=#pid135093
+    

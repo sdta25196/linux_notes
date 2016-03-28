@@ -21,9 +21,9 @@
 4. 测试从服务器是否可以正常启动
     /etc/init.d/mysqld_slave start
 
-5. 配置主从
+5. 配置主从，以下操作都是在主上面操作的
     mysql -S /tmp/mysql.sock        #登录主数据库
-    mysql -S /tmp/mysql_slave.sock  #登录从数据库
+    #mysql -S /tmp/mysql_slave.sock  #登录从数据库
     mysqldump -S /tmp/mysql.sock --events mysql > mysql_master.sql #备份mysql数据库
     mv mysql_master.sql /root/mysql_dump/
     mysql -S /tmp/mysql.sock master < /root/mysql_dump/mysql_master.sql #把mysql数据库导入到master库里面
@@ -44,8 +44,9 @@
 
     #赋予从权限,在主服务器新建一个用户赋予“REPLICATION SLAVE”的权限
     grant replication slave on *.* to 'slave_user'@'127.1.1.1' identified by 'admin';
-    flush privileges;
+    #禁止从数据库手动写入数据
     flush tables with read lock;
+    flush privileges;
     show master status;
 
     #编辑从的配置文件
@@ -65,11 +66,12 @@
     ##
     change master to master_host='127.1.1.1', master_port=3306, master_user='slave_user', master_password='admin', master_log_file='mysql-bin.000001', master_log_pos=106;
 
+    # 然后到主上执行
+    mysql -uroot -S /tmp/mysql_slave.sock -e "unlock tables"
+
     #最后一步
     slave start;
 
-    #禁止从数据库手动写入数据
-    flush tables with read lock;
 
     #查看同步状态，如果出现下面两行，则表示配置不成功。
     show slave status;
@@ -80,10 +82,17 @@
     Slave_IO_Running: Yes
     Slave_SQL_Running: Yes
 
+    #解锁
+    unlock tables;
+
 6. 要注意的问题
     a、重启主的mysql服务之前，最后先在从上stop slave一下，这样更加保险。 重启完了再开启start slave。 这样就没有问题了。
+    b、建议: MySQL 主从机制比较脆弱,谨慎操作。如果重启 master,务必要先把 slave 停掉,
+也就是说需要在 slave 上去执行 slave stop 命令,然后再去重启 master 的 mysql 服务,否则很有可能就会中断了。当然重启完后,还需要把 slave 给开启 slave start。 
 
 7. 参考文档
      flush tables with read lock的作用          http://www.t086.com/article/4816
      Linux MySQL主从复制(Replication)配置       http://www.cnblogs.com/zgx/archive/2011/09/13/2174823.html
-
+     主从配置                                   http://guodong432500.blog.163.com/blog/static/34535481201311242215373/
+                                                http://www.jb51.net/article/33052.htm
+    

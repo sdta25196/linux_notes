@@ -1,0 +1,47 @@
+http://it165.net/admin/html/201401/2248.html
+centos6网卡配置文件、DNS相关的几个问题 http://www.apelearn.com/bbs/thread-8220-1-1.html
+http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=10532&highlight=LVS
+http://www.apelearn.com/bbs/thread-10536-1-1.html
+https://www.zhihu.com/question/22315406
+
+1、 LB集群这LVS介绍
+	LB：Load Balance
+	
+2、常用软件
+		nginx; 应用层
+		lvs;网络层
+		keepalived;
+		F5;
+		Netscale;
+3、LVS的3种模式
+	a、NAT
+		yum install -y ipvsadm
+	b、TUN
+	c、DR
+	
+4、NAT模式
+director端的配置
+#!/bin/bash
+# director 服务器开启路由转发功能;
+echo 1 > /proc/sys/net/ipv4/ip_forward
+# 关闭icmp的重定向
+echo 0 > /proc/sys/net/ipv4/conf/all/send_redirects	
+echo 0 > /proc/sys/net/ipv4/conf/default/send_redirects
+echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
+echo 0 > /proc/sys/net/ipv4/conf/eth1/send_redirects
+
+# director 设置防火墙
+iptables -t nat -F
+iptables -t nat -X
+iptables -t nat -A POPSTROUTING -s 192.168.200.0/24 -j MASQUERADE
+
+# director 设置ipvsadm
+IPVSADM='/sbin/ipvsadm'
+$IPVSADM -C
+$IPVSADM -A -t 192.168.0.190:80 -s rr
+$IPVSADM -a -t 192.168.0.190:80 -r 192.168.200.128:80 -m
+$IPVSADM -a -t 192.168.0.190:80 -r 192.168.200.129:80 -m
+
+5、rs端的配置需要更改下默认网关为director的ip地址
+
+6、打开rs的80端口

@@ -51,3 +51,7 @@ define service{
 
 3. 重启服务（监控端）
     /etc/init.d/nagios restart
+
+4. 参考文章
+    http://www.apelearn.com/bbs/thread-7380-1-1.html
+    http://www.apelearn.com/bbs/thread-7917-1-1.html

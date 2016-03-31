@@ -1,0 +1,8 @@
+1. 需要添加的客户端上都需要安装net-snmp软件包
+2. 编辑/etc/snmp/snmpd.conf，修改两个地方
+	syslocation 3.173-Director ＃作为一个标志，名字可以随便起
+	syscontact root@Director.com ＃这是城管理员的联系方式
+
+3. 如果添加的设备找不到网卡，可以参考这篇文章
+http://www.apelearn.com/bbs/thread-8089-1-1.html
+http://www.linuxfly.org/post/552/

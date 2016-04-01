@@ -1,0 +1,21 @@
+1. 在服务器端添加发邮件的脚本
+    mkdir -p /home/zabbix/bin
+    vim !$/warn.sh
+    #!/bin/bash
+    echo "$3" | /bin/mail -s "$2" $1
+
+    chmod +x /home/zabbix/bin/warn.sh
+
+2. 修改zabbix服务端的配置文件，修改内容如下，把脚本路径修改为自己刚刚创建的目录
+    vim /etc/zabbix/zabbix_server.conf
+    AlertScriptsPath=/home/zabbix/bin
+    ExternalScripts=/home/zabbix/bin
+
+3. 在web界面的配置
+    # Create Media type
+    Administration -> Media types -> Create media type -> "Description:SendMail Type:Script Script Name:warn.sh" -> save
+    # Create users
+    Administration -> Users -> ...SELECT USER... LEFT <-[Create user group] -> Create user ->  
+
+    # Create Actions
+    Configuration -> Actions -> Create action -> "TAB.Action->Name:WarnningAndSendMail" -> "TAB.Operations:New->Operation type:Send Message->Send to Users:Add:ChangFeng->Send only to:SendMail->Add" -> Save

@@ -1,0 +1,20 @@
+# 获取unix时间戳
+[root@MASTER ~]# date +%s
+1459385788
+
+# 获取北京时间
+[root@MASTER ~]# date '+%F %T'
+2016-03-31 08:58:03
+
+# unix timestamp转北京时间
+[root@MASTER ~]# date -d @1459385788 +%F\ %T
+2016-03-31 08:56:28
+
+# 显示周前，应该如何表示
+date -d "a week ago" +%Y-%m-%d
+date -d "a week ago" +%F
+date -d "-1 week" +%F
+daste -d "a week ago" +%Y-%m-%d
+
+
+

@@ -1,0 +1,32 @@
+1. shell的变量名的命名规则
+    a、不能以数字、下划线、特殊字符形状
+    b、不能包含特殊字符
+    c、区分大小写
+
+2. shell中if的结构
+    if [ $var -gt number ]; then
+    else
+        ...
+    fi
+
+    if [ expresion ]; then
+    elif [ expresion ]; then
+    else
+        ... ...
+    fi
+
+    if [ expresion ]; then
+        ... ...
+    fi
+
+1. shell中if的表达式常用记录
+    #判断变量a的值是否大于3
+    if [ $a -gt 3 ]    
+    if [[  $a > 3 ]]    
+    if (( $a > 3 ))
+
+    #判断一个文件是否可写
+    if [ -w /path/file.name ]; then ... fi
+
+    #判断一个变量的值是否为空
+    if [ -z $variable ]; then ... fi

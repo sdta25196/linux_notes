@@ -49,7 +49,7 @@ to the detailed description below for a complete description.
 
 ################### 注意下面同步目录的时候有没有/的区别
 [root@server ~]# rsync -avlPu Documents /tmp/Doc/
-[root@server ~]# rtree /tmp/Doc/
+[root@server ~]# tree /tmp/Doc/
 /tmp/Doc/
 └── Documents
 ├── 1.txt.bak

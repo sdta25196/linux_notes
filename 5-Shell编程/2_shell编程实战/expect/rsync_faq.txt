@@ -1,0 +1,116 @@
+测试主题：rsync的--files-from参数需要注意的几个问题
+
+测试环境：本地机器ip 192.168.3.173 远程机器ip 192.168.3.175
+            本地/tmp目录下的所有文件同步到远程机器的/var/tmp/目录下
+            file文件中存放的是要同步的文件列表
+
+测试目的：在rsync测试中在使用--files-from参数中同步的源路径为/和不为/的区别
+
+测试过程：
+1. cat file
+/mail.php
+/passwd
+/php-fpm-fcgi.sock
+/php-fpm-fcgi_test.sock
+/pulse-9bCgT89DVTJj
+/root
+/sambashare
+/vyrAFUX
+/yum_save_tx-2016-03-27-23-50_GLY4r.yumtx
+/yum_save_tx-2016-03-28-00-03muMQ9N.yumtx
+/yum_save_tx-2016-03-28-00-03_XEbto.yumtx
+/yum_save_tx-2016-03-28-00-08V1REVL.yumtx
+/yum_save_tx-2016-03-28-00-09FcfUYy.yumtx
+/yum_save_tx-2016-03-28-00-12SR2wDg.yumtx
+
+# 下面两条命令的执行结果都是一样的，都会将/tmp/目录下的所有文件复制到/var/tmp/目录下
+rsync -avp --files-from=file /tmp/ /var/tmp/
+rsync -avp --files-from=file /tmp /var/tmp/
+
+# 下面的命令会直接在/目录下找mai.php，然后提示找不到相关的文件，也就是说，在源目录下找文件列表中的文件，至于文件列表中带不带/，rsync会有自己的处理机制，
+# 比如file文件中第一个要同步的文件是mail.php，源路径为/，则会在本地/目录下找名为mail.php的文件，如找不到则直接报错
+# 如果源路径为/tmp，则会在/tmp目录下找mail.php这个文件
+rsync -avp --files-from=file /tmp /var/tmp/
+
+[root@MASTER expect]# cat file 
+/tmp/mail.php
+/tmp/passwd
+/tmp/php-fpm-fcgi.sock
+/tmp/php-fpm-fcgi_test.sock
+/tmp/pulse-9bCgT89DVTJj
+/tmp/root
+/tmp/sambashare
+/tmp/vyrAFUX
+/tmp/yum_save_tx-2016-03-27-23-50_GLY4r.yumtx
+/tmp/yum_save_tx-2016-03-28-00-03muMQ9N.yumtx
+/tmp/yum_save_tx-2016-03-28-00-03_XEbto.yumtx
+/tmp/yum_save_tx-2016-03-28-00-08V1REVL.yumtx
+/tmp/yum_save_tx-2016-03-28-00-09FcfUYy.yumtx
+/tmp/yum_save_tx-2016-03-28-00-12SR2wDg.yumtx
+
+# 如果源文件路径为/，那么就会在目标目录上生成对应的级联目录，如/tmp/mail.php，在同步到目标目录的目录结构为
+rsync -avp --files-from=file / /var/tmp/
+[root@MASTER tmp]# tree .
+.
+└── tmp
+├── mail.php
+├── passwd
+├── php-fpm-fcgi.sock
+├── php-fpm-fcgi_test.sock
+├── pulse-9bCgT89DVTJj
+├── root
+├── sambashare
+├── vyrAFUX
+├── yum_save_tx-2016-03-27-23-50_GLY4r.yumtx
+├── yum_save_tx-2016-03-28-00-03muMQ9N.yumtx
+├── yum_save_tx-2016-03-28-00-03_XEbto.yumtx
+├── yum_save_tx-2016-03-28-00-08V1REVL.yumtx
+├── yum_save_tx-2016-03-28-00-09FcfUYy.yumtx
+└── yum_save_tx-2016-03-28-00-12SR2wDg.yumtx
+
+5 directories, 10 files
+
+# 下面的测试结果和上面的是一样的。
+cat file
+tmp/mail.php
+tmp/passwd
+tmp/php-fpm-fcgi.sock
+tmp/php-fpm-fcgi_test.sock
+tmp/pulse-9bCgT89DVTJj
+tmp/root
+tmp/sambashare
+tmp/vyrAFUX
+tmp/yum_save_tx-2016-03-27-23-50_GLY4r.yumtx
+tmp/yum_save_tx-2016-03-28-00-03muMQ9N.yumtx
+tmp/yum_save_tx-2016-03-28-00-03_XEbto.yumtx
+tmp/yum_save_tx-2016-03-28-00-08V1REVL.yumtx
+tmp/yum_save_tx-2016-03-28-00-09FcfUYy.yumtx
+tmp/yum_save_tx-2016-03-28-00-12SR2wDg.yumtx
+
+rsync -avp --files-from=file / /var/tmp/
+
+[root@MASTER tmp]# tree  /var/tmp/
+/var/tmp/
+└── tmp
+├── mail.php
+├── passwd
+├── php-fpm-fcgi.sock
+├── php-fpm-fcgi_test.sock
+├── pulse-9bCgT89DVTJj
+├── root
+├── sambashare
+├── vyrAFUX
+├── yum_save_tx-2016-03-27-23-50_GLY4r.yumtx
+├── yum_save_tx-2016-03-28-00-03muMQ9N.yumtx
+├── yum_save_tx-2016-03-28-00-03_XEbto.yumtx
+├── yum_save_tx-2016-03-28-00-08V1REVL.yumtx
+├── yum_save_tx-2016-03-28-00-09FcfUYy.yumtx
+└── yum_save_tx-2016-03-28-00-12SR2wDg.yumtx
+
+5 directories, 10 files
+
+测试结果：
+1、如果使用--files-from=FILE，FILE中使用的是绝对路径，且源路径给的是/，那么目标目录中会生成对应的级联目录
+2、如果FILE中没有使用绝对路径，且源路径给的是/，那么rsync会尝试在根目录下找对应的文件，如FILE中的文件表示为tmp/aa/bb/cc，那么首先会在/目录尝试找tmp，然后是aa，依次类推，并且也会在目标目录上生成对应的级联目录
+3、如果源路径没有使用/，那么会尝试在给定的源路径下找相应的文件，不会生成对应的级联目录
+4、说白了，如果给定源路径是/，则表示会有对应的级联目录生成，其它的则不会有。不论是不是/目录，都会在其给定的源路径下文件中给定的文件

@@ -1,0 +1,22 @@
+#! /usr/bin/expect
+
+set passwd "lyys"
+set user "root"
+set host [ lindex $argv 0 ]
+set file [ lindex $argv 1 ]
+
+# rsync通过一个文件读取要同步的文件列表，文件列表中的内容可以不以/开关，而/表示本地要同步的源，最终的结果会在远程机器上生成级联目录，如：
+
+# file中的内容为abc/132.txt 源为/tmp，那么相当于命令 rsync -avp /tmp/abc/132.txt root@$host:/var/tmp/132.txt
+
+# file中的内容为/abc/132.txt，源为/，那么命令相当于 rsync -avp /abc/132.txt root@host:/var/tmp/abc/132.txt
+
+# file中的内容为abc/132.txt，源为/，那么命令相当于 rsync -avp /abc/132.txt root@host:/var/tmp/abc/132.txt, 如果/目录下有abc目录并且有132.txt文件，则上面的命令可以成功，否则会提示找不到文件
+spawn rsync -avp --files-from=$file / root@$host:/var/tmp
+
+expect {
+    "yes/no" { send "yes\r" exp_continue }
+    "assword:" { send "$passwd\r" }
+}
+
+expect eof

@@ -1,0 +1,21 @@
+#! /usr/bin/expect
+
+set user "root"
+set password "lyys"
+set host "192.168.3.175"
+
+spawn ssh -l $user $host
+
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$password\r" }
+}
+
+expect "]*"
+    send "touch /tmp/123.txt\r"
+    
+expect "]*"
+    send "echo \"hello, It's used expect impletement auto login and execute some commands.\" > /tmp/123.txt\r"
+
+expect "]*"
+    send "exit\r"

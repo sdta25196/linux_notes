@@ -2,6 +2,36 @@
 a\ 在指定的行后面追加一行
 b\ 在指定的行前面追加一行
 
+###　使用指定的行号追加内容，在使用行号的过程中，需要注意的问题有以下
+###　N;后面只能使用偶数，且不可以为０
+###  a表示在指定的行后面追加一行
+###  i表示在当前行插入一行，如果指定行为４，其实最终的结果插入行的位置是第三行。
+sed -i 'N;2a\newline' 1.txt
+sed -i 'N;2i\newline' 1.txt
+
+[root@lanmp shell]# cat << eof > 1.txt
+> a
+> b
+> c
+> d
+> eof
+[root@lanmp shell]# sed -i 'N;2a2222' 1.txt 
+[root@lanmp shell]# cat 1.txt 
+a
+b
+2222
+c
+d
+[root@lanmp shell]# sed -i 'N;2i2222' 1.txt 
+[root@lanmp shell]# cat 1.txt 
+2222
+a
+b
+2222
+c
+d
+
+
 [root@RS2 shell]# cat 1.txt 
 1111
 3333

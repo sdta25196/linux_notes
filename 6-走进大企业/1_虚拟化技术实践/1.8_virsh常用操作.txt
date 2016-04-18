@@ -30,7 +30,7 @@ Escape character is ^]
 [root@localhost ~]# 
 
 4. 关闭虚拟机
-# 这个命令并不能真正的关机，需要安装yum install -y acpid
+# 这个命令并不能真正的关机，需要安装yum install -y acpid，而且还需要开户acpid服务/etc/init.d/acpid start
 virsh shutdown vm_4 
 
 # virsh destroy vm_4也可以把vm_4给关闭掉，并不是真正的删除vm_4虚拟机，只不过是从virsh　list中把它移除，这种方法适用于没有网络的情况下，当然也可以先通过console登录到虚拟机后再执行poweroff或者是shutdown命令。

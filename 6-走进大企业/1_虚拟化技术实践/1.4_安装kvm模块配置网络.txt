@@ -1,0 +1,47 @@
+1. 修改网卡配置文件，这里使用桥接网络。我用virtualbox不能识别vmx，所以不能使用virtualbox做实验，这里是使用的vmware　workstation 12，非常欣慰vm有了linux版本的了
+
+cd /etc/sysconfig/network-scripts/
+
+# cat ifcfg-eth0 
+DEVICE=eth0
+HWADDR=00:0C:29:1A:B1:12
+TYPE=Ethernet
+UUID=877c4a2b-f0e1-4dcc-a4f7-9ab9006a0a96
+ONBOOT=yes
+NM_CONTROLLED=yes
+BOOTPROTO=none
+BRIDGE=br0
+[root@kvm network-scripts]# 
+
+# cat ifcfg-br0 
+DEVICE=br0
+TYPE=Bridge
+UUID=877c4a2b-f0e1-4dcc-a4f7-9ab9006a0a96
+ONBOOT=yes
+NM_CONTROLLED=yes
+BOOTPROTO=static
+IPADDR=192.168.1.6
+NETMASK=255.255.255.0
+GATEWAY=192.168.1.1
+DNS1=192.168.1.1
+[root@kvm network-scripts]# 
+
+说明：虚拟机是桥接模式，所以设置br0的ip和我的真机同样的网段，包括网关也是我路由器的ip，大家可以根据自己的环境去配置，目的是为了让虚拟机可以上网。
+
+/etc/init.d/network restart
+
+2. 检查kvm模块是否加载
+lsmod | grep kvm
+若不能正常加载，则可以使用下面的命令
+modprobe kvm_intel
+实在不行可以尝试reboot
+
+3. 启动或者重启libvirtd和messagebus服务
+/etc/init.d/libvirtd restart
+/etc/init.d/messagebus restart
+
+此时可以查看网络接口列表
+# brctl show
+bridge namebridge idSTP enabledinterfaces
+br08000.000c291ab112noeth0
+virbr08000.52540048c540yesvirbr0-nic

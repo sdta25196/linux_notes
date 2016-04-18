@@ -1,0 +1,91 @@
+1. 创建虚拟机
+virt-install \
+    --name centos6.7-i386 \
+    --ram 512 \
+    --disk path=/kvm_images/centos6.7-i386.img,size=30 \
+    --vcpus 1 \
+    --os-type linux \
+    --os-variant rhel6 \
+    --network bridge=br0 \
+    --graphics none \
+    --console pty,target_type=serial \
+    --location 'http://mirrors.163.com/centos/6.7/os/i386/' \
+    --extra-args 'console=ttyS0,115200n8,serial'
+
+--name 虚拟机的名字
+--ram　分配的内存大小
+--disk path　指定虚拟机硬盘的位置
+    size=30　指定硬盘大小为30g，格式为raw，raw不能做快照，如果需要做快照则要加载的为qcow２格式，如何创建acow２格式的硬盘，可以参考 http://www.361way.com/kvm-qcow2-preallocation-metadata/3354.html 
+    如：qemu-img create -f qcow2 -o preallocation=metadata  /data/test02.img 7G;  --disk path=/data/test02.img,format=qcow2,size=7,bus=virtio
+--vcpus　指定分配cpu几个
+--os-type　指定系统类型为linux
+--network 　指定网络类型
+--graphics　指定通过那种类型安装客户操作系统，可以是vnc，也可以没有图形，这里使用没有图形的文本方式安装
+--console　指定控制台类型
+--location　指定安装介质地址，可以是网络地址，也可以是本地的一个绝对路径，
+            （--location '/mnt/', 其中/mnt/下就是我们挂载的光盘镜像mount /dev/cdrom /mnt)如果是网络路径，那么后面还需要指定一个安装介质，比如NFS，假如虚拟机设置ip后，不能连外网，那么就会提示让我们选择安装途径
+--extra-args 设定内核参数
+
+2. 使用本地镜像资源并且使用qcow２格式
+#先创建qcow2镜像文件
+[root@kvm ~]# qemu-img create -f qcow2 -o preallocation=metadata /kvm_images/changfeng1.qcow2 10G
+Formatting '/kvm_images/changfeng1.qcow2', fmt=qcow2 size=10737418240 encryption=off cluster_size=65536 preallocation='metadata'
+
+#安装选项
+virt-install \
+        --name  changfeng2 \
+        --ram 1024 \
+        --disk path=/kvm_images/changfeng2.qcow2,format=qcow2,size=7,bus=virtio \
+        --vcpus 1 \
+        --os-type linux \
+        --os-variant rhel6 \
+        --network bridge=br0 \
+        --graphics none \
+        --console pty,target_type=serial \
+        --location '/media/centos-i386/' \
+        --extra-args 'console=ttyS0,115200n8 serial'
+
+--location '/media/centos-i386/'，这里的路径为复制的centos光盘，需要修改里面的内容，不然无法正常安装，修改images-i386下面的内容就可以了。
+[root@kvm centos-i386]# cat /media/centos-i386/.treeinfo 
+[general]
+family = CentOS
+timestamp = 1438724347.41
+variant = 
+totaldiscs = 1
+version = 6.7
+discnum = 1
+packagedir = 
+arch = i386
+
+[images-i386]
+kernel = isolinux/vmlinuz
+initrd = isolinux/initrd.img
+
+[images-xen]
+kernel = images/pxeboot/vmlinuz
+initrd = images/pxeboot/initrd.img
+
+[stage2]
+mainimage = images/install.img
+
+# 配置nfs
+cat /etc/exports 
+/media/centos-i386 192.168.3.0/24(ro)
+/etc/init.d/rpcbind restart
+/etc/init.d/rpcbind restart
+
+# 待光盘正常启动后，配置完ip地址后，就会弹出安装媒体人质选项，选择nfs，分别填写nfs的服务器地址，安装文件为/images/install.img，options可写可不写，写ro即可。
+
+# 列出正在运行的虚拟机
+virsh list
+# 切换到指定的虚拟机
+virsh console vm_4
+
+[root@kvm ~]# virsh list
+ Id    Name                           State
+ ----------------------------------------------------
+  13    vm_4                           running
+
+  [root@kvm ~]# virsh console vm_4
+  Connected to domain vm_4
+  Escape character is ^]

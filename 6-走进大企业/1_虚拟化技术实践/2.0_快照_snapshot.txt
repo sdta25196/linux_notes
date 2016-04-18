@@ -1,0 +1,79 @@
+1. 快照可以在虚拟机运行和关闭下的状态下拍摄，raw格式的磁盘是不可以拍摄快照的
+
+2. 如何创建一个快照
+    # virsh snapshot-create vm_name，创建出来的快照是raw格式的
+    [root@kvm ~]# virsh snapshot-create vm_4_clone
+    Domain snapshot 1460975579 created
+
+3. 查看快照的格式, 如果虚拟磁盘下已经创建了快照，会把快照的信息也列出来
+    [root@kvm ~]# qemu-img info /kvm_images/vm_4.qcow2 
+    image: /kvm_images/vm_4.qcow2
+    file format: qcow2
+    virtual size: 10G (10737418240 bytes)
+    disk size: 1.0G
+    cluster_size: 65536
+    [root@kvm ~]# qemu-img info /kvm_images/vm_4_clone.qcow2 
+    image: /kvm_images/vm_4_clone.qcow2
+    file format: qcow2
+    virtual size: 10G (10737418240 bytes)
+    disk size: 10G
+    cluster_size: 65536
+    Snapshot list:
+    ID        TAG                 VM SIZE                DATE       VM CLOCK
+    1         1460975579             198M 2016-04-18 18:32:59   00:20:07.569
+    [root@kvm ~]# qemu-img info /kvm_images/changfeng2.qcow2 
+    image: /kvm_images/changfeng2.qcow2
+    file format: qcow2
+    virtual size: 7.0G (7516192768 bytes)
+    disk size: 961M
+    cluster_size: 65536
+
+4. 快照管理
+    # 查看 
+    # a、virsh snapshot-list vm_name
+    virsh snapshot-list vm_4
+    qemu-img info /path/vm_name
+    # b、qemu-img info /kvm_images/vm_4_clone.qcow2
+    qemu-img info /kvm_images/vm_4_clone.qcow2
+    
+5. 如何转换raw格式的磁盘格式为qcow２
+    # 转换pcow２的磁盘格式为raw
+    qemu-img convert -f qcow2 -O raw /kvm_images/changfeng2.qcow2 /kvm_images/changfeng2.raw.img
+    # 查看转换完的目录下面的文件，是否被替换
+    cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img info ./cvrt.
+    cvrt.pcow2    cvrt.raw.img  
+
+    # 查看转换后的文件格式
+    cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img create -f qcow2 -o preallocation=metadata /home/cn/kvm_imgs/cvrt.pcow2 2G
+    Formatting '/home/cn/kvm_imgs/cvrt.pcow2', fmt=qcow2 size=2147483648 encryption=off cluster_size=65536 preallocation='metadata' lazy_refcounts=off 
+    cn@cn-Alienware-15 ~/kvm_imgs $ ls -lh
+    total 524K
+    -rw-r--r-- 1 cn cn 2.1G Apr 18 11:32 cvrt.pcow2
+    cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img info ./cvrt.pcow2 
+    image: ./cvrt.pcow2
+    file format: qcow2
+    virtual size: 2.0G (2147483648 bytes)
+    disk size: 524K
+    cluster_size: 65536
+    Format specific information:
+        compat: 1.1
+            lazy refcounts: false
+            cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img convert -f qcow2 -O raw ./cvrt.pcow2  ./cvrt.raw.img
+            cn@cn-Alienware-15 ~/kvm_imgs $ ls
+            cvrt.pcow2  cvrt.raw.img
+            cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img info ./cvrt.raw.img 
+            image: ./cvrt.raw.img
+            file format: raw
+            virtual size: 2.0G (2147483648 bytes)
+    disk size: 0
+    cn@cn-Alienware-15 ~/kvm_imgs $ qemu-img info ./cvrt.pcow2 
+    image: ./cvrt.pcow2
+    file format: qcow2
+    virtual size: 2.0G (2147483648 bytes)
+    disk size: 524K
+    cluster_size: 65536
+    Format specific information:
+        compat: 1.1
+            lazy refcounts: false
+
+6. 使用virsh edit vm_name其实就是在编辑/etc/libvirt/qemu/vm_name.xml

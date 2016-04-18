@@ -1,0 +1,36 @@
+1. 虚拟化介绍
+    a、虚拟化模型
+        基础硬件 -> VMM(Virtual Machine Monitory) -> VMM
+    b、通过工具把cpu、内存、硬盘等真实硬件资源给模拟成更少的虚拟硬件资源
+    c、为什么需要虚拟化
+        使硬件资源使用率最大化
+        云计算领域
+    d、虚拟化分类
+        软件级别：所有硬件通过模拟器模拟出来（qemu）
+        硬件级别：通过VMM(虚拟机监视器，和Hypervisor是同一级别的)将硬件分配和管理，操作系统运行在建立好的vm上(xen, vmware[ESX, workstation], kvm, virtualbox)
+        操作系统级别：虚拟机操作系统和宿主操作系统共享，可以模拟上千个虚拟机出来(openvz)
+
+2. 半虚拟化、全虚拟化
+    a、半虚拟化(para-virtualization)
+    b、半虚拟化宿主机和客户机都需要更改操作内核，客户机需要知道宿主机的存在，两者需要协同合作。(Xen支持半虚拟化和全虚拟化)
+    c、全虚拟化(full virtualization)
+    d、全虚拟化为客户机提供了完整的虚拟硬件资源，客户机不需要做任何的更改，它不知道宿主机的存在。(kvm属于完全虚拟化，vmware、virtualbox也是全虚拟化)
+
+3. Xen和KVM比较
+    a、不管cpu是否支持虚拟化，xen都可以安装，而kvm必须要cpu支持虚拟化才可以
+    b、xen支持半虚拟化也支持全虚拟化，kvm仅仅支持全虚拟化
+    c、安装xen后，xen会替换原来的内核接管系统管理，而kvm仅仅是内核的一个模块，依然由系统原来内核管理系统。
+    d、kvm是后起之秀，没有xen出现的早，但是kvm出来后等到了广大linux内核的喜爱，就是因为kvm不修改内核，接管内核
+    e、xen被ctrix收购，有商业版的xen　server，kvm被redhat收购，
+    f、在xen的体系结构中，Xen Hypervisor运行于硬件之上，并将系统资源进行虚拟化，将虚拟化的资源分配给上层的虚拟机(vm)，然后通过虚拟机vm来运行相应的客户操作系统
+
+4. KVN介绍
+    a、KVM全称是Kernel virtual machine，是针对包含虚拟化扩展(Intel VT 或者是　AMD-V)的硬件上的完全原生的虚拟化解决方案
+    b、kvm是Qumranet开发，基于linux内核。2008-09-04被RedHat收购
+    c、rhel5/centos5默认是xen，rhel６/centos６默认是kvm
+
+5. KVM架构
+    a、kvm驱动：作为linux内核的一个模块，其主要负责虚拟机的创建，虚拟内存的分配，VCPU寄存器的读写以及VCPU的运行。
+    b、qemu：用于模块虚拟机用户空间组件，提供I/O设备模型，访问外设的途径
+    c、libvirt，virsh：由于qemu工具效率不高，RedHat为kvm开发了辅助工具，比如libvirt，libguestfs等。libvirt是一套提供了多种语言接口的api，为各种虚拟化工具提供了一套方便、可靠的编程接口，而且支持xen。使用libvirt，你只需要通过libvirt提供的函数连接到kvm或者是xen宿主机，便可以用同样的命令控制不同的虚拟机了。libvirt不仅提供了api，还提供了一套基吞文本的管理虚拟机的命令virsh，可以通过使用virsh命令来使用libvirt的全部功能
+    d、virt-manager：是一套用python编写的虚拟机管理图形界面，用户可以通过它直观的操作不同的操作系统，利用libvirt的api实现的。

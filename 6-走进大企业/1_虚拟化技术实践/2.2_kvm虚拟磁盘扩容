@@ -70,3 +70,13 @@
 	The filesystem on /dev/VolGroup/lv_root is now 3277824 blocks long.
 
 	[root@vm-1 ~]#
+	
+	####### START ########
+	pvcreate /dev/vda*
+	vgs
+	VG       #PV #LV #SN Attr   VSize  VFree
+	VolGroup   2   2   0 wz--n- 13.50g 4.00g
+	lvextend -l +100%FREE /dev/VolGroup/lv_root
+	resize2fs  /dev/VolGroup/lv_root 
+	####### ENDS #########
+	

@@ -75,7 +75,11 @@ cat /etc/exports
 /etc/init.d/rpcbind restart
 
 # 待光盘正常启动后，配置完ip地址后，就会弹出安装媒体人质选项，选择nfs，分别填写nfs的服务器地址，安装文件为/images/install.img，options可写可不写，写ro即可。
+# 不知道为什么nfs配置为一个网段的时候，在安装虚拟机的过程中启动镜像就需要写为完整的路径，如
+[root@localhost install]# cat /etc/exports 
+/media/install/ 192.168.3.0/24(ro)
 
+install img: /media/install/images/install.img
 # 列出正在运行的虚拟机
 virsh list
 # 切换到指定的虚拟机

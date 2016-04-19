@@ -1,0 +1,23 @@
+    有时候有这样的需求，一个虚拟机已经undefine了，但是又需要还原，也就是需要再重新define一下，由于undefine只是把配置文件删掉了（/etc/libvirt/qemu/目录下），虚拟镜像并不会被删除，所以只能复制一份配置文件
+    复制配置文件的方法有两种，一种是直接cp，另外一种使用virsh dumpxml命令，把它重定向到一个文件中。下面就是使用第二种方法
+
+1. 导出xml配置文件重定向为一个文件
+    virsh dumpxml vm_1 > /etc/libvirt/qemu/vm_1_bak.xml
+
+2. 编辑配置文件
+    关键地方有两个，一个是name，另外一个是uuid，这两个是不可以一样的。其它的都可以自定义，比如硬盘、cpu、内存等。
+    [root@localhost ~]# virsh define /etc/libvirt/qemu/vm_1_bak.xml 
+    Domain vm_1_bak defined from /etc/libvirt/qemu/vm_1_bak.xml
+
+    [root@localhost ~]# virsh list --all
+     Id    Name                           State
+     ----------------------------------------------------
+      2     vm_1                           running
+      -     vm_1_bak                       shut off
+      -     vm_1_clone                     shut off
+3. 下面的步骤就和正常的一样，可以启动了
+    virsh start vm_1_bak
+    virsh console vm_1_bak
+
+
+    由于我之前的虚拟硬盘镜像已经被删除了，这里做的测试都是使用已经注册的虚拟硬盘，测试结果发现两台虚拟机使用同一个硬盘是可以同时运行的。

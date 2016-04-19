@@ -1,0 +1,27 @@
+1. 思路
+    a、虚拟机磁盘镜像
+    b、xml配置文件/etc/libvirt/qemu/*.xml
+    c、重新定义virsh define vm_name
+
+2. 步骤
+    a、复制配置文件
+        # virsh dumpxml vm_1 > /etc/libvirt/qemu/vm_1_migration.xml
+    b、复制虚拟磁盘
+        # rsync -avP /kvm/vm_1.qcow2 /kvm/vm_1_migration.qcow2
+    c、编辑迁移过来的配置文件
+        # vim /etc/libvirt/qemu/vm_1_migration.xml
+        name、uuid、硬盘路径这些都需要修改
+    d、定义域，添加到虚拟机库里
+        # virsh define /etc/libvirt/qemu/vm_1_migration.xml 
+        Domain vm_1_migration defined from /etc/libvirt/qemu/vm_1_migration.xml
+
+        [root@localhost ~]# virsh list --all
+         Id    Name                           State
+         ----------------------------------------------------
+          4     vm_1                           running
+          -     vm_1_bak                       shut off
+          -     vm_1_clone                     shut off
+          -     vm_1_migration                 shut off
+     e、启动虚拟机
+        virsh --console start vm_1_migration
+

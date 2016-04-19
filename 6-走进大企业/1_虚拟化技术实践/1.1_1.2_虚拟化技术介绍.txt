@@ -34,3 +34,6 @@
     b、qemu：用于模块虚拟机用户空间组件，提供I/O设备模型，访问外设的途径
     c、libvirt，virsh：由于qemu工具效率不高，RedHat为kvm开发了辅助工具，比如libvirt，libguestfs等。libvirt是一套提供了多种语言接口的api，为各种虚拟化工具提供了一套方便、可靠的编程接口，而且支持xen。使用libvirt，你只需要通过libvirt提供的函数连接到kvm或者是xen宿主机，便可以用同样的命令控制不同的虚拟机了。libvirt不仅提供了api，还提供了一套基吞文本的管理虚拟机的命令virsh，可以通过使用virsh命令来使用libvirt的全部功能
     d、virt-manager：是一套用python编写的虚拟机管理图形界面，用户可以通过它直观的操作不同的操作系统，利用libvirt的api实现的。
+
+6. 参考文档
+http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=8299&highlight=kvm

@@ -130,3 +130,16 @@ Id    Name                           State
 16    vm_4                           running
 17    changfeng2                     running
 
+11. 查看虚拟机磁盘
+[root@localhost ~]# virsh domblklist vm_1
+Target     Source
+------------------------------------------------
+vda        /kvm/vm_1.qcow2
+vdb        /kvm/vm_1_new.qcow2
+
+12. 查看虚拟机网卡列表
+[root@localhost ~]# virsh domiflist vm_1
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br0        virtio      52:54:00:b5:ce:21
+vnet1      bridge     br0        -           52:54:00:9f:ab:86

@@ -1,0 +1,50 @@
+在vmware或者是virtualbox中可以在掉电的情况下，调整内存、网卡，cpu等，当然在kvm中也是同样支持的
+
+1. 在虚拟机掉电的情况下，修改内存和cpu的参数
+# 注意下面的<memory unit= ... ... />这行表示可以分配的最大内存，下面那行表示当前已经分配的内存大小，
+# cpu这里由原来的１个修改为２个。
+<domain type='kvm'>
+    <name>vm_1</name>
+    <uuid>eed8de78-06a1-126e-996f-ea6b1d997852</uuid>
+    <memory unit='KiB'>2048576</memory>
+    <currentMemory unit='KiB'>2048576</currentMemory>
+    <vcpu placement='static'>2</vcpu>
+
+2. 启动已经修改好的虚拟机
+    #　如果虚拟机之前是开启状态，则需要先destroy一下，比较保险的方法如下，（之前测试，restart是没有效果的）
+    virsh destroy vm_1
+    virsh start vm_1
+    virsh console vm_1
+
+    # 查看修改的参数是否已经变化
+    # 原来１个cpu，1024的内存，现在cpu已经变为２个，内存变为1.8G 
+    [root@vm-1 ~]# cat /proc/cpuinfo  | grep processor | wc -l 
+    2
+    [root@vm-1 ~]# free -h
+    total       used       free     shared    buffers     cached
+    Mem:          1.8G       140M       1.6G       196K       5.9M        37M
+    -/+ buffers/cache:        96M       1.7G 
+    Swap:         1.0G         0B       1.0G 
+    [root@vm-1 ~]# 
+
+3. 查看指定的虚拟机有几块网卡
+    # virsh domiflist vm_1
+    Interface  Type       Source     Model       MAC
+    -------------------------------------------------------
+    vnet0      bridge     br0        virtio      52:54:00:b5:ce:21
+
+    # 添加一块新的网卡
+    # virsh attach-interface vm_1 --type bridge --source br0
+    Interface attached successfully
+
+    # virsh domiflist vm_1
+    Interface  Type       Source     Model       MAC
+    -------------------------------------------------------
+    vnet0      bridge     br0        virtio      52:54:00:b5:ce:21
+    vnet1      bridge     br0        -           52:54:00:9f:ab:86
+
+4. 查看已经添加的网卡
+    ifconfig -a
+    ＃ 如果不能识别到新网卡，则需要使用下面的命令
+    #  注意下面的命令是为了更新配置文件，让虚拟机重启后可以识别到
+    # virsh dumpxml vm_1 > /etc/libvirt/qemu/vm_1.xml

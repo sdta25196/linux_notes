@@ -1,0 +1,20 @@
+a、编辑php.ini添加两行
+session.save_handler = memcache 
+session.save_path = "tcp://127.1.1.1:11211" 
+b、或者httpd.conf中对应的虚拟主机中添加
+php_value session.save_handler "memcache" 
+php_value session.save_path "tcp://127.1.1.1:11211"  
+c、或者php-fpm.conf对应的pool中添加
+php_value[session.save_handler] = memcache
+php_value[session.save_path] = " tcp://127.1.1.1:11211 "
+
+1. 编辑php.ini，添加２行
+[Session]
+; Handler used to store/retrieve data.
+; http://php.net/session.save-handler
+; session.save_handler = files
+session.save_handler = memcache
+session.save_path = "tcp://127.1.1.1:11211"
+
+2. 测试
+

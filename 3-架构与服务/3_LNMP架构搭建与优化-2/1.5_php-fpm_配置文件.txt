@@ -27,6 +27,7 @@ pm.max_requests = 500
 rlimit_files = 1024
 slowlog = /tmp/php-fpm-www_slow.log ;日志记录的位置
 request_slowlog_timeout = 1 ;单位是秒
+;php_admin_value[open_basedir]用来限制只能在某个目录下活动
 php_admin_value[open_basedir] = /data/www:/tmp
 
 [www-test] ;新添加一个pool

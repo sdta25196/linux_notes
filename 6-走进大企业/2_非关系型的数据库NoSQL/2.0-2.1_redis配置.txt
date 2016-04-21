@@ -1,0 +1,122 @@
+1. 查看所有的配置
+redis-cli
+config get *
+127.0.0.1:6379> CONFIG GET timeout
+1) "timeout"
+2) "300"
+
+# redis通用配置
+#################################################################################################################
+daemonize：是否以后台daemon方式运行
+pidfile：pid文件位置
+port：监听的端口号
+bind 192.168.3.173 192.168.3.232 # 指定绑定的ip，可以有多个
+unixsocket /tmp/redis.sock # 也可以监听socket
+unixsocketperm 755 # 当监听socket时，它的权限为７５５
+tcp-keepalive 0 # TCP连接保活策略，可以通过tcp-keepalive来设置，单位是秒，假如设置为60秒，则sever会每60秒向连接空闲的客户端发起ack请求，以检查客户端是否已经挂掉，对于无响应的则会关闭连接，如果设置为０，则不会进行保活检测
+timeout：请求超时时间
+loglevel：log信息级别，有４种，notice，debug，wanning，verbose
+logfile：log文件位置
+syslog-indent redis # 如果希望日志打印到syslog中，通过syslog-enable来控制，另外syslog-indent还可以让你指定syslog里的日志标志
+syslog-facility local0 # 指定syslog的设备，可以是USER或者是local0-local7
+databases：开启数据库的数量，0-15
+save * *：保存快照的频率，第一个*表示多长时间，第三个*表示执行多少次写操作。在一定时间内执行一定数量的写操作时，自动保存快照。可设置多个条件。
+rdbcompression：是否使用压缩
+dbfilename：数据快照文件名（只是文件名，不包括目录）
+dir：数据快照的保存目录（这个是目录）
+appendonly：是否开启appendonlylog，开启的话每次写操作会记一条log，这会提高数据抗风险能力，但影响效率。
+appendfsync：appendonlylog如何同步到磁盘（三个选项，分别是每次写都强制调用fsync、每秒启用一次fsync、不调用fsync等待系统自己同步）
+#################################################################################################################
+
+# redis快照配置(rdb配置)
+#################################################################################################################
+save 900 1                      # 表示每15分钟至少有1个key发生变化，则会触发一次持久化
+save 300 10                     # 表示每5分钟至少有10个key改变，则会触发一次持久化
+save 60 10000                   # 表示60秒至少有10000个吸变化，则触发一次持久化
+save ""                         # 这样可以禁用rdb持久化
+stop-writes-on-bgsave-error yes # rdb持久化写入磁盘避免不了会出现失败的情况，默认一旦出现失败，redis会马上停止写操作，如果你感觉无所谓，那就可以使用该选项关闭这个功能
+rdbcompression yes              # 是否需要压缩
+rdbchecsum yes                  # 是否进行数据校验
+dbfinename dump.rdb             # 定义快照的名字
+dir /usr/local/redis/var        # 定义快照文件存储路径
+2. redis-cli
+[root@MASTER ~]# redis-cli 
+127.0.0.1:6379> select 0
+OK
+127.0.0.1:6379> KEYS *
+1) "list"
+2) "set_sort"
+3) "left"
+4) "key3"
+5) "key1"
+6) "hash"
+7) "key2"
+8) "key4"
+9) "set1"
+127.0.0.1:6379> SELECT 1
+OK
+127.0.0.1:6379[1]> KEYS *
+(empty list or set)
+127.0.0.1:6379[1]> SELECT 2
+OK
+127.0.0.1:6379[2]> KEYS *
+(empty list or set)
+127.0.0.1:6379[2]> SELECT 3
+OK
+127.0.0.1:6379[3]> KEYS *
+(empty list or set)
+127.0.0.1:6379[3]> SELECT 100
+(error) ERR invalid DB index
+127.0.0.1:6379> SELECT 15
+OK
+127.0.0.1:6379[15]> KEYS *
+(empty list or set)
+127.0.0.1:6379[15]> SELECT 16
+(error) ERR invalid DB index
+#################################################################################################################
+
+# redis安全相关配置
+#################################################################################################################
+requirepass aminglinux              # 设置redis-server的密码，密码为aminglinux
+## rename-command 这个命令在Redis server v=3.0.7 版本中并不好使
+rename-command CONFIG aminglinux.conf # 将config命令更名为aminglinux.conf，这样避免了误操作，如果已经使用了AOF持久化，不建议这样使用
+rename-command CONFIG ""            # 这样就取消了该CONFIG命令
+#################################################################################################################
+
+## 设置密码，添加requirepass aminglinux在配置文件(/usr/local/redis/etc/redis.conf)中，然后重启服务，登录不需要密码，但是不能查询数据，需要使用redis-cli -a password的方式来登录，查询到的数据就正常了
+[root@MASTER ~]# /etc/init.d/redis restart
+Stopping redis-server:                                     [  OK  ]
+Starting redis-server:                                     [  OK  ]
+[root@MASTER ~]# redis-cli 
+127.0.0.1:6379> get key1
+(error) NOAUTH Authentication required.
+127.0.0.1:6379> exit
+[root@MASTER ~]# redis-cli -a aminglinux
+127.0.0.1:6379> get key1
+"aming"
+127.0.0.1:6379> 
+
+# redis限制相关的操作
+#################################################################################################################
+maxclients 10000                    # 限制最大连接数
+maxmemory <bytes>                   # 设定最大的内存使用数，单位是bytes
+maxmemory-policy volatile-lru       # 指定内存移除规则
+maxmemory-samples 3                 # LRU算法和最小TTL算法都并非是精确算法，而是估算值，所以你可以设置样本的大小，假如redis默认是检查3个key并选择其中LRU的那个，那么你可以改变这个key样本的数量。
+#################################################################################################################
+
+# redis AOF持久化相关配置
+#################################################################################################################
+appendonly no                       # 如果是yes，则开启aof持久化
+appendfilename “appendonly.aof”     # 指定aof文件名字
+appendfsync everysec                #指定fsync()调用模式，有三种no(不调用fsync),always(每次写都会调用fsync),everysec(每秒钟调用一次fsync)。第一种最快，第二种数据最安全，但性能会差一些，第三种为折中方案，默认为第三种。
+no-appendfsync-on-rewrite no        # 设置yes，可避免当写入量非常大时的磁盘io阻塞
+auto-aof-rewrite-percentage 10      # 规定什么情况下会触发aof重写。该值为一个比例，10表示当aof文件增幅达到10%时则会触发重写机制。
+auto-aof-rewrite-min-size 64mb       # 重写会有一个条件，就是不能低于64Mb
+#################################################################################################################
+
+# redis 慢日志相关配置
+#################################################################################################################
+针对慢日志，你可以设置两个参数，一个是执行时长，单位是微秒，另一个是慢日志的长度。当一个新的命令被写入日志时，最老的一条会从命令日志队列中被移除。 
+slowlog-log-slower-than 10000 #慢于10000ms则记录日志
+slowlog-max-len 128  #日志长度
+#################################################################################################################

@@ -1,0 +1,28 @@
+1. 环境准备
+两台服务器： master （192.168.31.105） 和 slave （192.168.31.112）
+分别按照之前介绍的步骤安装好redis并启动
+master 配置文件不用动
+slave 配置文件上加一行   
+slaveof server_ip_addr redis_port
+# 如slaveof 192.168.3.175 6379，表示主服务器的ip是192.168.3.173，端口为6379
+masterauth  passwd_of_master  //如果主上设置了密码，要加这行，如主止的密码为test，则这个字段需要写为test
+分别启动master和slave
+
+2. 需要注意的问题
+    a、主的selinux，iptables需要关闭
+    b、从配置文件中的
+        slaveof server_ip_addr redis_port
+        # 如slaveof 192.168.3.175 6379，表示主服务器的ip是192.168.3.173，端口为6379
+        masterauth passwd
+        # 这个密码是主上面设备的密码，不可以随便写的
+
+3. Redis主从其他相关配置
+slave-read-only yes  //让从只读
+repl-ping-slave-period 10  //设置slave向master发起ping的频率，每10s发起一次
+repl-timeout 60 //设置slave ping不通master多少s后就超时
+repl-disable-tcp-nodelay no //是否开启tcp_nodelay,开启后将会使用更少的带宽，但会有延迟，所以建议关闭
+repl-backlog-size 1mb //同步队列的长度，backuplog是master的一个缓冲区，主从断开后，master会先把数据写到缓冲区，slave再次连接会从缓冲区中同步数据
+repl-backlog-ttl 3600  //主从断开后，缓冲区的有效期，默认1小时
+slave-priority 100 //多个slave是可以设置优先级的，数值越小优先级越高，应用于集群中，支持slave切换为master，优先级最高的才会切换
+min-slaves-to-write 3  //和下面的一起使用，它的意思是master发现有超过3个slave的延迟高于10s，那么master就会暂时停止写操作。这两个数值任何一个为0，则关闭该功能，默认第一数值是0。
+min-slaves-max-lag 10 

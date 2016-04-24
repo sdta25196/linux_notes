@@ -1,0 +1,313 @@
+### 键值相关操作
+keys *    //取出所有key
+keys my* //模糊匹配
+exists key_name  //有key_name键 返回1 ，否则返回0；
+del  key1 // 删除一个key    //成功返回1 ，否则返回0；
+EXPIRE key1 100  //设置key1 100s后过期
+ttl key // 查看键 还有多长时间过期，单位是s,当 key 不存在时，返回 -2 。 当 key 存在但没有设置剩余生存时间时，返回 -1 。 否则，返回 key 的剩余生存时间。
+select  0  //代表选择当前数据库，默认进入0 数据库
+move age 1  // 把age 移动到1 数据库
+persist key1   //取消key1的过期时间
+randomkey //随机返回一个key
+rename oldname newname //重命名key
+type key1 //返回键的类型
+
+## 键值的操作示例
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "key4"
+9) "la"
+10) "temp"
+11) "sta_b"
+12) "sta"
+13) "k1"
+14) "key1"
+15) "zset"
+127.0.0.1:6379> KEYS k*
+1) "key4"
+2) "k1"
+3) "key1"
+127.0.0.1:6379> EXISTS name
+(integer) 0
+127.0.0.1:6379> EXISTS hello
+(integer) 0
+127.0.0.1:6379> EXISTS Gigge
+(integer) 0
+127.0.0.1:6379> GET kv1
+(nil)
+127.0.0.1:6379> GET k1
+"v1"
+127.0.0.1:6379> EXISTS k1
+(integer) 1
+127.0.0.1:6379> EXISTS v1
+(integer) 0
+127.0.0.1:6379> DEL k1
+(integer) 1
+127.0.0.1:6379> EXISTS k1
+(integer) 0
+# 查看key1的过期时间
+127.0.0.1:6379> ttl key1
+(integer) -1
+# 修改key1的过期时间为100秒
+127.0.0.1:6379> EXPIRE key1 100
+(integer) 1
+127.0.0.1:6379> ttl key1
+(integer) 97
+127.0.0.1:6379> ttl key1
+(integer) 95
+# 选择默认的数据库，默认进入0数据库
+127.0.0.1:6379> SELECT 0 
+OK
+127.0.0.1:6379> SELECT 1
+OK
+127.0.0.1:6379[1]> SELECT 16
+(error) ERR invalid DB index
+127.0.0.1:6379> SELECT 15
+OK
+127.0.0.1:6379[15]> KEYS *
+(empty list or set)
+127.0.0.1:6379[15]> SELECT 0
+OK
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "key4"
+9) "la"
+10) "temp"
+11) "sta_b"
+12) "sta"
+13) "zset"
+127.0.0.1:6379> SELECT key1 "hello redis"
+(error) ERR wrong number of arguments for 'select' command
+127.0.0.1:6379> SET key1 "hello redis"
+OK
+127.0.0.1:6379> get key1
+"hello redis"
+127.0.0.1:6379> ttl key1
+(integer) -1
+127.0.0.1:6379> EXPIRE key1 500
+(integer) 1
+127.0.0.1:6379> ttl key1
+(integer) 498
+127.0.0.1:6379> EXPIRE key1 -1
+(integer) 1
+127.0.0.1:6379> ttl key1
+(integer) -2
+127.0.0.1:6379> ttl key1
+(integer) -2
+127.0.0.1:6379> ttl key1
+(integer) -2
+127.0.0.1:6379> PERSIST key1
+(integer) 0
+127.0.0.1:6379> ttl key1
+(integer) -2
+127.0.0.1:6379> MOVE key1 1
+(integer) 0
+127.0.0.1:6379> SELECT 1
+OK
+127.0.0.1:6379[1]> ttl key1
+(integer) -2
+127.0.0.1:6379[1]> GET key1
+(nil)
+127.0.0.1:6379[1]> KEYS *
+(empty list or set)
+127.0.0.1:6379[1]> RANDOMKEY
+(nil)
+127.0.0.1:6379[1]> SELECT 0 
+OK
+127.0.0.1:6379> RANDOMKEY 
+"sta_b"
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "key4"
+9) "la"
+10) "temp"
+11) "sta_b"
+12) "sta"
+13) "zset"
+127.0.0.1:6379> RENAME key4 key
+OK
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "la"
+9) "temp"
+10) "key"
+11) "sta_b"
+12) "sta"
+13) "zset"
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "la"
+9) "temp"
+10) "key"
+11) "sta_b"
+12) "sta"
+13) "zset"
+127.0.0.1:6379> TYPE zset
+zset
+127.0.0.1:6379> TYPE sta
+set
+127.0.0.1:6379> TYPE la
+list
+127.0.0.1:6379> TYPE tmp
+string
+127.0.0.1:6379> TYPE key
+string
+
+### 服务相关操作
+127.0.0.1:6379> DBSIZE
+(integer) 13
+127.0.0.1:6379> KEYS *
+1) "lista"
+2) "stb"
+3) "stc"
+4) "hash_m"
+5) "tmp"
+6) "stc_1"
+7) "hash"
+8) "la"
+9) "temp"
+10) "key"
+11) "sta_b"
+12) "sta"
+13) "zset"
+127.0.0.1:6379> info
+# Server
+         redis_version:3.0.7
+         redis_git_sha1:00000000
+         redis_git_dirty:0
+         redis_build_id:98147704b600bc7a
+         redis_mode:standalone
+         os:Linux 2.6.32-573.el6.i686 i686
+         arch_bits:32
+         multiplexing_api:epoll
+         gcc_version:4.4.7
+         process_id:28083
+         run_id:c3109b33213d029bce0480e998afe0bba442a0f2
+         tcp_port:6379
+         uptime_in_seconds:59292
+         uptime_in_days:0
+         hz:10
+         lru_clock:1598374
+         config_file:/usr/local/redis/etc/redis.conf
+
+# Clients
+         connected_clients:1
+         client_longest_output_list:0
+         client_biggest_input_buf:0
+         blocked_clients:0
+
+# Memory
+         used_memory:1498824
+         used_memory_human:1.43M
+         used_memory_rss:1884160
+         used_memory_peak:1534928
+         used_memory_peak_human:1.46M
+         used_memory_lua:24576
+         mem_fragmentation_ratio:1.26
+         mem_allocator:jemalloc-3.6.0
+
+# Persistence
+         loading:0
+         rdb_changes_since_last_save:0
+         rdb_bgsave_in_progress:0
+         rdb_last_save_time:1461215747
+         rdb_last_bgsave_status:ok
+         rdb_last_bgsave_time_sec:0
+         rdb_current_bgsave_time_sec:-1
+         aof_enabled:1
+         aof_rewrite_in_progress:0
+         aof_rewrite_scheduled:0
+         aof_last_rewrite_time_sec:-1
+         aof_current_rewrite_time_sec:-1
+         aof_last_bgrewrite_status:ok
+         aof_last_write_status:ok
+         aof_current_size:3347
+         aof_base_size:199
+         aof_pending_rewrite:0
+         aof_buffer_length:0
+         aof_rewrite_buffer_length:0
+         aof_pending_bio_fsync:0
+         aof_delayed_fsync:0
+
+# Stats
+         total_connections_received:14
+         total_commands_processed:51016
+         instantaneous_ops_per_sec:1
+         total_net_input_bytes:1927882
+         total_net_output_bytes:80388
+         instantaneous_input_kbps:0.04
+         instantaneous_output_kbps:0.00
+         rejected_connections:0
+         sync_full:3
+         sync_partial_ok:0
+         sync_partial_err:1
+         expired_keys:2
+         evicted_keys:0
+         keyspace_hits:116
+         keyspace_misses:12
+         pubsub_channels:0
+         pubsub_patterns:0
+         latest_fork_usec:152
+         migrate_cached_sockets:0
+
+# Replication
+         role:master
+         connected_slaves:1
+         slave0:ip=192.168.3.175,port=6379,state=online,offset=78666,lag=0
+         master_repl_offset:78666
+         repl_backlog_active:1
+         repl_backlog_size:1048576
+         repl_backlog_first_byte_offset:34640
+         repl_backlog_histlen:44027
+
+# CPU
+         used_cpu_sys:45.06
+         used_cpu_user:9.98
+         used_cpu_sys_children:0.01
+         used_cpu_user_children:0.00
+
+# Cluster
+         cluster_enabled:0
+
+# Keyspace
+         db0:keys=13,expires=0,avg_ttl=0
+         127.0.0.1:6379> DBSIZE
+         (integer) 13
+         127.0.0.1:6379> FLUSHDB
+         OK
+         127.0.0.1:6379> DBSIZE
+         (integer) 0
+         127.0.0.1:6379> FLUSHALL
+         OK
+127.0.0.1:6379> 
+

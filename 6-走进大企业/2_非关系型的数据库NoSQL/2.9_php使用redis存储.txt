@@ -1,0 +1,14 @@
+1. redis扩展模块安装
+wget https://github.com/phpredis/phpredis/archive/develop.zip
+phpize
+./configure --with-php-config=/usr/local/php/bin/php-config 
+echo $?
+make
+echo $?
+make install
+
+2. 编辑php主配置文件
+vi /usr/local/php/etc/php.ini
+extension_dir = "/usr/local/php/lib/php/extensions/no-debug-non-zts-20121212/"
+extension="memcache.so"
+extension="redis.so"

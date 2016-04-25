@@ -1,0 +1,155 @@
+1. MongoDB副本集测试
+a、主上建库，建集合
+>use mydb
+>db.acc.insert({AccountID:1,UserName:"123",password:"123456"})
+>show dbs
+b、从上查看
+>show dbs   
+若出现错误Error: listDatabases failed:{ "note" : "from execCommand", "ok" : 0, "errmsg" : "not master" }，需要执行
+>rs.slaveok()
+
+[root@B mongo]# mongo
+MongoDB shell version: 3.0.11
+connecting to: test
+changfeng:SECONDARY> show dbs
+2016-04-25T23:35:10.103+0800 E QUERY    Error: listDatabases failed:{ "note" : "from execCommand", "ok" : 0, "errmsg" : "not master" }
+    at Error (<anonymous>)
+    at Mongo.getDBs (src/mongo/shell/mongo.js:47:15)
+    at shellHelper.show (src/mongo/shell/utils.js:630:33)
+    at shellHelper (src/mongo/shell/utils.js:524:36)
+    at (shellhelp2):1:1 at src/mongo/shell/mongo.js:47
+changfeng:SECONDARY> rs.slaveOk()
+changfeng:SECONDARY> show dbs
+admin  0.078GB
+local  0.078GB
+mydb   0.078GB
+
+2. MongoDB副本集更改权重模拟主宕机
+默认三台机器权重都为1，如果任何一个权重设置为比其他的高，则该台机器马上切换为primary角色，所以我们预设三台机器的权重分别为：219:3,220:2,221:1
+cfg = rs.conf()
+cfg.members[0].priority = 3
+cfg.members[1].priority = 2
+cfg.members[2].priority = 1
+rs.reconfig(cfg)
+这样的话，第二个节点将会成为候选主节点。
+主上执行 iptables -I INPUT -p tcp --dport 27017 -j DROP
+
+注意：创建集合的时候不能为纯数字，这样虽然可以创建，但是在插入数据的时候会出问题
+
+测试过程：
+a、添加一条iptables规则, 查看日志仅次于主优先级的从服务器已经切换为主，可以通过rs.stats()查看到原来的主的health值已经变为0了，也可以通过日志查看到相关的信息
+changfeng:SECONDARY> 
+changfeng:PRIMARY> rs.status()
+{
+    "set" : "changfeng",
+    "date" : ISODate("2016-04-25T15:57:19.966Z"),
+    "myState" : 1,
+    "members" : [
+    {
+        "_id" : 0,
+        "name" : "192.168.3.219:27017",
+        "health" : 0,
+        "state" : 8,
+        "stateStr" : "(not reachable/healthy)",
+        "uptime" : 0,
+        "optime" : Timestamp(0, 0),
+        "optimeDate" : ISODate("1970-01-01T00:00:00Z"),
+        "lastHeartbeat" : ISODate("2016-04-25T15:57:17.564Z"),
+        "lastHeartbeatRecv" : ISODate("2016-04-25T15:57:19.575Z"),
+        "pingMs" : 4,
+        "lastHeartbeatMessage" : "Failed attempt to connect to 192.168.3.219:27017; couldn't connect to server 192.168.3.219:27017 (192.168.3.219), connection attempt failed",
+        "configVersion" : -1
+    },
+    {
+        "_id" : 1,
+        "name" : "192.168.3.220:27017",
+        "health" : 1,
+        "state" : 1,
+        "stateStr" : "PRIMARY",
+        "uptime" : 3711,
+        "optime" : Timestamp(1461599646, 1),
+        "optimeDate" : ISODate("2016-04-25T15:54:06Z"),
+        "electionTime" : Timestamp(1461599814, 1),
+        "electionDate" : ISODate("2016-04-25T15:56:54Z"),
+        "configVersion" : 3,
+        "self" : true
+    },
+    {
+        "_id" : 2,
+        "name" : "192.168.3.221:27017",
+        "health" : 1,
+        "state" : 2,
+        "stateStr" : "SECONDARY",
+        "uptime" : 3613,
+        "optime" : Timestamp(1461599646, 1),
+        "optimeDate" : ISODate("2016-04-25T15:54:06Z"),
+        "lastHeartbeat" : ISODate("2016-04-25T15:57:19.686Z"),
+        "lastHeartbeatRecv" : ISODate("2016-04-25T15:57:19.698Z"),
+        "pingMs" : 16,
+        "lastHeartbeatMessage" : "could not find member to sync from",
+        "configVersion" : 3
+    }
+],
+"ok" : 1
+}
+
+b、在主宕机的这段期间，在新的主上有数据写入，当主恢复的时候（假设可以正常恢复）数据是否会同步过来
+## 主宕机后在新的主上的操作
+changfeng:PRIMARY> use mydb2
+switched to db mydb2
+changfeng:PRIMARY> show dbs
+admin  0.078GB
+local  0.078GB
+mydb   0.078GB
+changfeng:PRIMARY> db.createCollection('testc2')
+{ "ok" : 1 }
+changfeng:PRIMARY> show dbs
+admin  0.078GB
+local  0.078GB
+mydb   0.078GB
+mydb2  0.078GB
+changfeng:PRIMARY> 
+## 在主上删除原来添加的iptables规则、
+    #iptables -I INPUT -p tcp --dport 27107 -j DROP
+    iptables -D INPUT -p tcp --dport 27107 -j DROP
+## 删除iptables主上查看
+changfeng:SECONDARY> show  dbs
+2016-04-26T00:02:49.421+0800 E QUERY    Error: listDatabases failed:{ "note" : "from execCommand", "ok" : 0, "errmsg" : "not master" }
+    at Error (<anonymous>)
+    at Mongo.getDBs (src/mongo/shell/mongo.js:47:15)
+    at shellHelper.show (src/mongo/shell/utils.js:630:33)
+    at shellHelper (src/mongo/shell/utils.js:524:36)
+    at (shellhelp2):1:1 at src/mongo/shell/mongo.js:47
+changfeng:SECONDARY> 
+changfeng:SECONDARY> 
+changfeng:SECONDARY> 
+changfeng:SECONDARY> 
+changfeng:SECONDARY> 
+changfeng:SECONDARY> 
+changfeng:PRIMARY> 
+changfeng:PRIMARY> 
+changfeng:PRIMARY> 
+changfeng:PRIMARY> 
+changfeng:PRIMARY> show  dbs
+admin  0.078GB
+local  0.078GB
+mydb   0.078GB
+mydb2  0.078GB
+
+## 原来主机切换回来后上个主上的变化
+2016-04-26T00:02:23.371+0800 I NETWORK  DBClientCursor::init call() failed
+2016-04-26T00:02:23.372+0800 I NETWORK  trying reconnect to 127.0.0.1:27017 (127.0.0.1) failed
+2016-04-26T00:02:23.373+0800 I NETWORK  reconnect 127.0.0.1:27017 (127.0.0.1) ok
+changfeng:PRIMARY> 
+2016-04-26T00:02:35.558+0800 I NETWORK  DBClientCursor::init call() failed
+> 
+> 
+> show dbs
+2016-04-26T00:02:39.679+0800 I NETWORK  trying reconnect to 127.0.0.1:27017 (127.0.0.1) failed
+2016-04-26T00:02:39.679+0800 I NETWORK  reconnect 127.0.0.1:27017 (127.0.0.1) ok
+admin  0.078GB
+local  0.078GB
+mydb   0.078GB
+mydb2  0.078GB
+
+    iptables -I INPUT -p tcp --dport 27107 -j DROP

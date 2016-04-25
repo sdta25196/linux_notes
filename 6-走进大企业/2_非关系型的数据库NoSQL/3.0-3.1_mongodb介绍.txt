@@ -1,0 +1,52 @@
+1. 什么是MongoDB
+a、MongoDB 是由C++语言编写的，是一个基于分布式文件存储的开源数据库系统，属于NoSQL。
+b、在高负载的情况下，可以添加更多的节点，可以保证服务器性能。
+c、MongoDB 旨在为WEB应用提供可扩展的高性能数据存储解决方案。
+d、MongoDB 将数据存储为一个文档，数据结构由键值(key=>value)对组成。MongoDB 文档类似于 JSON 对象。字段值可以包含其他文档，数组及文档数组。
+
+2. MongoDB安装
+a、搭建yum源
+    如果安装epel扩展源，可以安装到2.4.14-1的版本，但是这次我们要使用3.0的版本，所以要先配置一下yum源
+    vim /etc/yum.repos.d/mongodb-org-3.0.repo 
+    [mongodb-org-3.0]
+    name=MongoDB Repository
+    baseurl=http://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.0/x86_64/
+    gpgcheck=0
+    enabled=1
+    检测配置文件
+    [root@kvm ~]# yum list | grep mongodb
+    mongodb-org.x86_64                       3.0.11-1.el6                   mongodb-org-3.0
+    mongodb-org-mongos.x86_64                3.0.11-1.el6                   mongodb-org-3.0
+    mongodb-org-server.x86_64                3.0.11-1.el6                   mongodb-org-3.0
+    mongodb-org-shell.x86_64                 3.0.11-1.el6                   mongodb-org-3.0
+    mongodb-org-tools.x86_64                 3.0.11-1.el6                   mongodb-org-3.0
+
+b、安装和配置MongoDB
+    yum install -y mongodb-org
+    配置文件：/etc/mongod.conf
+    日志路径：/var/log/mongodb/mongod.log
+    数据库路径：/var/lib/mongo/
+    fork: true, pidFilePath: /var/run/mongodb/mongod.pid后面的#注释需要删除，不然启动服务会出现问题
+    bindIP: 后面不加任何ip表示绑定所有ip，需要修改的地方如下
+processManagement:
+    # fork and run in background
+    fork: true  
+    # location of pidfile
+    pidFilePath: /var/run/mongodb/mongod.pid  
+
+# network interfaces
+net:
+    port: 27017
+    # Listen to local interface only, comment to listen on all interfaces.
+    bindIp: 
+c、修改内核参数
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+vim /etc/security/limits.conf //加入
+mongod soft nofile 64000
+mongod hard nofile 64000
+mongod soft nproc 32000
+mongod hard nproc 32000
+
+d、启动服务：如果遇到mongod服务启动不起来，可以使用mongod -f /etc/mongod.conf来启动，因为/etc/init.d/mongod看不到启动打印信息
+    /etc/init.d/mongod start

@@ -1,0 +1,57 @@
+1. 安装php的mongo扩展
+a、wget http://pecl.php.net/get/mongo-1.4.5.tgz  -O /usr/local/src/mong_php.zip
+cd /usr/local/src/
+unzip mong_php.zip
+cd mongo-php-driver-master/
+/usr/local/php/bin/phpize
+./configure --with-php-config=/usr/local/php/bin/php-config
+make && make install
+vi /usr/local/php/etc/php.ini //增加 extension = mongo.so
+/usr/local/php/bin/php –m
+b、重启apache，重新加载php
+
+2. 测试mongo扩展 
+vi /usr/local/apache2/htdocs/1.php //增加
+<?php
+// 连接到mongodb
+$m = new MongoClient();
+echo "Connection to database successfully";
+// 选择一个数据库
+$db = $m->mydb;
+echo "Database mydb selected";
+?>
+curl  localhost/1.php
+参考 http://www.runoob.com/mongodb/mongodb-php.html 
+
+3. 测试
+a. 使用浏览器或者是curl测试
+    在php正常加载mgngo.so的情况下，是可以测试成功的。
+b. 编辑php.ini文件，让它不加载mongo.so模块，然后再用curl测试，这个时候就有问题了，直接显示500错误而且没有日志信息，所以以后如果遇到类似的问题就要看下模块是否已加载，这是一个启发，也是一种成长经验吧。
+curl -x 127.1.1.1:80 www.cf.com/1.php
+[root@kvm html]# curl -x 127.1.1.1:80 www.cf.com/1.php -v
+* About to connect() to proxy 127.1.1.1 port 80 (#0)
+    *   Trying 127.1.1.1... connected
+    * Connected to 127.1.1.1 (127.1.1.1) port 80 (#0)
+    > GET http://www.cf.com/1.php HTTP/1.1
+    > User-Agent: curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.19.1 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2
+    > Host: www.cf.com
+    > Accept: */*
+    > Proxy-Connection: Keep-Alive
+    > 
+    * HTTP 1.0, assume close after body
+    < HTTP/1.0 500 Internal Server Error
+    < Date: Mon, 25 Apr 2016 19:40:46 GMT
+    < Server: Apache/2.2.15 (CentOS)
+    < X-Powered-By: PHP/5.3.3
+    < Content-Length: 0
+    < Connection: close
+    < Content-Type: text/html; charset=UTF-8
+    < 
+    * Closing connection #0
+    [root@kvm html]# curl -x 127.1.1.1:80 www.cf.com/1.php -I
+    HTTP/1.0 500 Internal Server Error
+    Date: Mon, 25 Apr 2016 19:41:17 GMT
+    Server: Apache/2.2.15 (CentOS)
+    X-Powered-By: PHP/5.3.3
+    Connection: close
+    Content-Type: text/html; charset=UTF-8

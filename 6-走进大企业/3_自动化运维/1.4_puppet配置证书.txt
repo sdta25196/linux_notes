@@ -1,0 +1,45 @@
+1. puppet安装配置证书
+a、服务端查看客户端证书列表
+    //查看没有认证的客户端
+    puppet cert list
+    //查看所有的客户端
+    puppet cert list --all
+
+b、客户端上生成ssl证书
+    puppet agent --test --server Server.Puppet
+
+c、服务端签发指定客户端证书
+    //client.puppet为客户端的主机名
+    puppet cert sign client.puppet
+
+d、服务端可以删除指定客户端证书
+    puppet cert clean Client.Puppet
+
+e、删除所有证书
+    puppet cert clean -all
+
+操作示例：
+[root@Server ~]# puppet cert list --all
+  "client.puppet" (SHA256) A8:9F:D0:89:63:EC:50:AE:1F:E6:2F:D0:8A:DB:96:81:51:22:A4:21:53:40:F7:7E:C6:E2:59:B5:A0:2F:E6:A8
+  + "server.puppet" (SHA256) D9:A7:7F:6A:7A:60:77:CD:DC:F6:10:3D:BC:C1:72:4F:56:59:45:42:92:3D:53:67:ED:2D:8C:79:93:68:9E:4A (alt names: "DNS:Server.Puppet", "DNS:puppet", "DNS:puppet.Puppet", "DNS:server.puppet")
+  [root@Server ~]# puppet cert sign client.puppet
+  Notice: Signed certificate request for client.puppet
+  Notice: Removing file Puppet::SSL::CertificateRequest client.puppet at '/var/lib/puppet/ssl/ca/requests/client.puppet.pem'
+  [root@Server ~]# puppet cert list --all
+  + "client.puppet" (SHA256) DF:C1:C3:15:06:EF:0A:AD:9F:09:39:B6:7E:28:2D:B8:85:13:E9:E9:E6:7F:9B:4C:20:FE:ED:34:26:F6:BC:FA
+  + "server.puppet" (SHA256) D9:A7:7F:6A:7A:60:77:CD:DC:F6:10:3D:BC:C1:72:4F:56:59:45:42:92:3D:53:67:ED:2D:8C:79:93:68:9E:4A (alt names: "DNS:Server.Puppet", "DNS:puppet", "DNS:puppet.Puppet", "DNS:server.puppet")
+
+// 客户端上生成ssl证书
+[root@Client ~]# puppet agent --test --server server.puppet
+Info: Caching certificate for client.puppet
+Info: Caching certificate_revocation_list for ca
+Info: Caching certificate for client.puppet
+Notice: Ignoring --listen on onetime run
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Caching catalog for client.puppet
+Info: Applying configuration version '1461649833'
+Notice: Finished catalog run in 0.01 seconds
+
+需要注意的问题：如果服务端检测不到客户端，需要在客户端上清空已经生成的ssl认证信息，如下、
+   rm -rf /var/lib/puppet/ssl/*

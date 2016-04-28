@@ -11,7 +11,7 @@
 
 
 <VirtualHost *:80>
-   ServerAdmin jusontech@gmail.com
+   ServerAdmin justnet@gmail.com
    DocumentRoot "/data/www/"
    ServerName www.cf.cc
    ServerAlias www.3201.cc

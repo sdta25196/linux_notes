@@ -17,7 +17,7 @@ http://www.cnblogs.com/fnng/archive/2012/11/20/2779977.html
     mod_env.c
     mod_setenvif.c
     mod_version.c
-    prefork.c
+    prefork.c ## this line
     http_core.c
     mod_mime.c
     mod_status.c
@@ -42,6 +42,8 @@ daemon    1565  0.0  0.0   4200  1096 ?        S    08:32   0:00 /usr/local/apac
 daemon    1566  0.0  0.0   4200  1096 ?        S    08:33   0:00 /usr/local/apache2/bin/httpd -k start
 root      1646  0.0  0.0   6036   804 pts/1    S+   08:55   0:00 grep --color -i httpd
 
+1. prefork
+    prefork是以子进程的方式来运行的，其中一个进程出问题后并不会影响到其它的进程，缺点是战胜资源过多。进程之间有独立的内存空间，相对安全点。
 
 2. worker
     worker也有子进程，子进程下面还有线程，worker是以线程的方式启动的，线程之间可以共享内存，在处理高并发的时候优势非常的明显，由于它们之间是共享的，所以如题一个线程出问题势必会影响到其它的的线程。

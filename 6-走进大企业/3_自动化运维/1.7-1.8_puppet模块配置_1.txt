@@ -1,0 +1,45 @@
+Puppet自定义模块管理
+
+1、模块是puppet的配置单元，模块里会包含类和资源。同步文件、远程执行命令、cron等叫资源，都是通过模块来实现的。
+
+2、如何创建一个模块？
+    a、在服务端创建以下目录，其中files里面存放文件，可以留空，manifests里面是配置文件，templates是模块文件，也可以留空
+    mkdir /etc/puppet/modules/test_module/
+    mkdir /etc/puppet/modules/test_module/{files,manifests,templates}
+
+    b、创建配置文件，如下：
+    vi /etc/puppet/modules/test_module/manifests/init.pp
+        // 注意这里的class名要和自己定义的模块名(/etc/puppet/modules/test_module)一样，不然会出错的
+        class test_module {
+            file { "/tmp/test_module.txt":
+            owner => "root",
+            group => "root",
+            mode => 0400,
+            source => "puppet://$puppetserver/modules/test_module/1.txt"
+        }   
+    }
+    说明：类名字为test_module，类下面定义了一个资源file，文件名字为/tmp/test_module.txt，owner、group、mode定义了文件的属主、属组、权限，source定义这个文件从那里获取，$puppetserver这个变量需要定义一下，这里指的是puppet server服务器上的/etc/puppet/modules/test_module/files/1.txt，可以给这个文件插入一些数据，只是为了实验效果
+    
+    c、目录结构
+    /etc/puppet/modules/
+    tree  . 
+    .
+    └── test_module
+        ├── files
+        │   └── 1.txt
+        ├── manifests
+        │   └── init.pp
+        └── templates
+    4 directories, 2 files
+
+    d、vim /etc/puppet/manifests/site.pp
+        $puppetserver='Server.Puppet'
+        // 注意这里的client端的主页名羊不是client上的hostname，和puppet cert list --all中的要一致
+        node 'client.puppet' {
+               include test_module
+            }
+        }
+    说明：$puppetserver定义服务器端的主机名，node后面跟客户端的主机名，这里面定义客户端要加载的模块
+
+    e、配置完成后，在客户端执行以下命令，如果客户端上已经启动了puppet服务，可以不用执行命令，也会自动同步的
+        puppet agent --test --server=Server.Puppet

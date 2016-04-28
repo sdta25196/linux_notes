@@ -1,0 +1,46 @@
+服务器上的配置
+cat /etc/puppet/modules/test_module/manifests/init.pp
+class test_module {
+    file { "/tmp/test_module.txt":
+        owner => "root",
+        group => "root",
+        mode => 0400,
+        source => "puppet://$puppetserver/modules/test_module/1.txt"
+    }   
+
+    file { "/tmp/resion.tar.gz":
+        owner => "root",
+        group => "root",
+        mode => 0000,
+        source => "puppet://$puppetserver/modules/test_module/resion.tar.gz"
+    }   
+}
+
+class apache {
+    file { "/usr/local/apache2":
+        owner => "root",
+        group => 'root',
+        source => "puppet://$puppetserver/modules/test_module/apache2",
+        recurse => true,
+        purge => true
+    }   
+
+    exec { "res":
+        unless => "test -f /tmp/test_puppet.txt",
+        path => ["/bin", "/sbin", "/usr/bin", "/usr/sbin"],
+        command => "touch /tmp/test_puppet.txt"
+    }   
+
+    cron { "exec_cron":
+        command => "/usr/sbin/ntpdate time.windows.com",
+        user => "root",
+        minute => "*/10",
+        # ensure => "absent"
+    }   
+}
+
+说明：
+    分时日月周对应puppet里面的minute、hour、monthday、month、weekday
+    ensure设置为absent为删除任务
+参考：
+    http://puppet.wikidot.com/cron

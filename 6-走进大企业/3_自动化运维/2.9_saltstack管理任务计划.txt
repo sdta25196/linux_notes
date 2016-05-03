@@ -1,0 +1,53 @@
+1. 编辑配置文件，取消注释 /etc/salt/master 
+file_roots: 
+  base:
+    - /srv/salt/
+
+2. 编辑配置文件
+# cat /srv/salt/crontest.sls
+cron_test:
+  cron.present:
+    - name: /bin/touch /tmp/cron_salt_test.txt
+    - user: root
+    - minute: 15
+    - hour: 18
+    - daymonth: '*'
+    - dayweek: '*'
+
+# cat /srv/salt/top.sls 
+base:
+  'Client.Saltstack':
+    - crontest
+## 当然也可以通过file.managed来管理cront，因为cront都是以配置文件的形式来保存的，如果需要删除不再使用的cront计划任务，可以通过添加以下配置文件实现，当然添加、删除任务计划只可以出现其中的任意一个
+cat /srv/salt/delete_cront.sls
+cron_delete_test:
+  cron.absent:
+    - name: /bin/touch /tmp/cron_salt_test.txt
+    - user: root
+    - minute: 15
+    - hour: 18
+    - daymonth: '*'
+    - dayweek: '*'
+
+3. 测试
+# salt 'Client.Saltstack' state.highstate
+Client.Saltstack:
+----------
+    ID: cron_test
+    Function: cron.present
+    Name: /bin/touch /tmp/cron_salt_test.txt
+    Result: True
+    Comment: Cron /bin/touch /tmp/cron_salt_test.txt added to root's crontab
+    Started: 03:45:58.444281
+    Duration: 21.385 ms
+Changes:   
+----------
+    root:
+    /bin/touch /tmp/cron_salt_test.txt
+
+Summary
+------------
+    Succeeded: 1 (changed=1)
+    Failed:    0
+------------
+Total states run:     1

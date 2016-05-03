@@ -1,0 +1,53 @@
+1. 编辑配置文件，取消注释 /etc/salt/master
+file_roots:
+  base:
+    - /srv/salt/
+
+2. 编辑配置文件
+cat shell_test.sls
+shell_test:
+  cmd.script:
+    - source: salt://test/1.sh
+    - user: root //这里的user指的是客户端机器上的用户
+
+cat /srv/salt/test/1.sh 
+#!/bin/bash
+
+touch /tmp/salt_test.txt
+if [ -d /tmp/salt ]; then
+    rm -rf /tmp/salt
+fi
+
+cat /srv/salt/top.sls 
+base:
+  'Client.Saltstack':
+    - shell_test
+
+3. 验证
+salt '*' saltutil.refresh_pillar
+salt 'Client.Saltstack' state.highstate
+
+Client.Saltstack:
+----------
+ID: shell_test
+    Function: cmd.script
+    Result: True
+    Comment: Command 'shell_test' run
+    Started: 01:52:12.137962
+    Duration: 68.392 ms
+Changes:   
+----------
+    pid:
+    5588
+    retcode:
+    0
+    stderr:
+    stdout:
+
+Summary
+------------
+    Succeeded: 1 (changed=1)
+    Failed:    0
+------------
+Total states run:     1
+

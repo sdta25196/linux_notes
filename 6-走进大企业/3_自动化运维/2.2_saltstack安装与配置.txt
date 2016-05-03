@@ -40,3 +40,29 @@
         说明：这里的*必须是在master上已经被接受的客户端，可以通过salt-key查询到，通常是我们已经设定的id值。
             关于这部分内容，它支持通配、列表以及正则，比如两台客户端Server.Saltstack, Client.Saltstack，我们可以写成Server*, Client*，再比如web10.com, web11.com，可以写成web1[01].
             salt -L 'web10,web11' salt -E 'web(10|11)'等形式，使用列表，即多个机器与,分隔，而且要加上-L，使用正则必须要带-E选项，它还支持grains，要加上-G选项，pillar加-l选项，
+
+测试：
+[root@Server ~]# salt 'Client.Saltstack, Server.Saltstack' test.ping
+No minions matched the target. No command was sent, no jid was assigned.
+ERROR: No return received
+[root@Server ~]# salt -L 'Client.Saltstack, Server.Saltstack' test.ping
+Server.Saltstack:
+    True
+Client.Saltstack:
+    True
+
+salt '*.Saltstack' cmd.run 'w'
+Client.Saltstack:
+19:56:16 up  2:10,  1 user,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+root     pts/1    192.168.3.241    19:54    1:50   0.00s  0.00s -bash
+Server.Saltstack:
+00:24:46 up  1:18,  1 user,  load average: 0.01, 0.03, 0.00
+USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+root     pts/0    192.168.3.241    00:16    1.00s  0.43s  0.40s /usr/bin/python
+
+[root@Server ~]# salt -E '(Server|Client).Saltstack' test.ping
+Client.Saltstack:
+    True
+Server.Saltstack:
+    True

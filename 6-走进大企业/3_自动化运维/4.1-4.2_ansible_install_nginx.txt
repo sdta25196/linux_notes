@@ -1,0 +1,80 @@
+思路：先在一台机器上编译安装好nginx、打包，然后再用ansible下发到每个客户端上
+# mkdir nginx_install
+# cd nginx_install
+# mkdir -p roles/{common,install}/{handlers,files,meta,tasks,templates,vars}
+
+说明：
+    roles 目录下有两个角色，common为一些准备操作，install为安装nginx的操作，这两个目录下的目录结构都一样
+    handlers 下面是当发生改变时要执行的操作，通常是配置文件发生改变，重启服务
+    files 为安装时用到的一些文件
+    meta 为说明信息，说明角色包信赖关系
+    tasks 里面是核心的配置文件
+    templates 通常存一些配置文件，启动脚本等一些模板文件
+    vars 下为定义的变量
+
+# tree .
+.
+└── roles
+    ├── common
+    │   ├── files
+    │   ├── handlers
+    │   ├── meta
+    │   ├── tasks
+    │   ├── templates
+    │   └── vars
+    └── install
+        ├── files
+        ├── handlers
+        ├── meta
+        ├── tasks
+        ├── templates
+        └── vars
+
+15 directories, 0 files
+
+# cd /etc/ansible/nginx_install/roles/common/tasks/
+// 定义common的tasks，因为nginx是需要安装一些信赖包的
+vim main.yml
+- name: Install initialization require software
+  yum: name={{ item }} state=installed
+  with_items:
+    - zlib-devel
+    - pcre-devel
+    - openssl-devel
+
+// 拷贝配置文件以及安装文件
+# cd /etc/ansible/nginx_install/ ; tar cxvf nginx.tar.gz /usr/local/nginx
+# cd /etc/ansible/nginx_install/roles/install/
+# cp /etc/init.d/nginx templates/
+# cp /usr/local/nginx/conf/nginx.conf templates/
+# cp /etc/ansible/nginx_install/nginx.tar.gz files/
+
+// 定义变量
+# cat /etc/ansible/nginx_install/roles/install/vars/main.yml
+nginx_user: www
+nginx_port: 80
+nginx_basedir: /usr/local/nginx
+
+// 定义tasks
+// copy.yml的主要功能就是复制安装文件和配置文件
+# cd /etc/ansible/nginx_install/roles/install/tasks/
+# cat copy.yml 
+- name: Copy Nginx Software
+  copy: src=nginx.tar.gz dest=/tmp/nginx.tar.gz owner=root group=root
+- name: Uncompression Nginx Software
+  shell: tar zxvf /tmp/nginx.tar.gz -C /usr/local/
+- name: Copy Nginx Scripts
+  templates: src=nginx dest=/etc/init.d/nginx owner=root group=root mode=0755
+- name: Copy Nginx Configure File
+  templates: src=nginx.conf dest={{ nginx_basedir }}/conf/ owner=root group=root mode=0644
+
+// install.yml
+- name: Create Nginx User
+  user: name={{ nginx_user }} state=present createhome=no shell=/sbin/nologin
+- name: Start Nginx Server
+  service: name=nginx state=restarted  
+- name: Add Boot Start Nginx Service
+  shell: chkconfig --level 345 nginx on
+- name: Delete Nginx compression file
+  shell: rm -rf /tmp/nginx.tar.gz
+

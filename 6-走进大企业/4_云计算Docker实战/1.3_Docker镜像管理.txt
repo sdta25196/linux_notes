@@ -1,0 +1,5 @@
+# docker pull centos        // 从docker.com获取一个镜像
+# docker images             // 查看本地有那些镜像
+# docker tag centos cfeng   // 为centos设置一个标签，相当于是复制了一份，他们的image id都一样
+# docker search arch        // 从docker仓库中搜索docker镜像，后面的是搜索的关键字
+# # docker run -t -i centos /bin/bash       // 用下载到的镜像开启一个容器，-i表示打开容器的标准输入，-t表示分配一个伪终端，这两个参数要放在镜像名的前面

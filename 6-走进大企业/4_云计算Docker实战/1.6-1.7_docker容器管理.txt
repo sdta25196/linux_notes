@@ -38,3 +38,27 @@
     hello
     world
 
+7. 删除一个容器
+    // 说明，如果你想删除一个容器，需要先stop，或者直接使用-f选项
+    # docker rm ac
+    Error response from daemon: Cannot destroy container ac: Conflict, You cannot remove a running container. Stop the container before attempting removal or use -f
+    Error: failed to remove containers: [ac]
+    # docker stop ac
+    ac
+    [root@kvm ~]# docker rm ac
+    ac
+    # docker ps
+    CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+    515827a86933        changfeng/centos    "/bin/bash"         59 minutes ago      Up 59 minutes                           upload              
+    38ed1041a990        centos              "/bin/bash"         2 hours ago         Up 2 hours                              reverent_hawking    
+
+8. 容器导出
+    # docker export 38  > centos_export.tar
+
+9. 容器导出
+    # cat centos_export.tar | docker import - am_centos
+    30e2ee647f5d235fe9bcc2033f2378051c2046c97d5d8e3ed6cd03c61bcffa88
+    # docker images
+    REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+    am_centos           latest              30e2ee647f5d        44 seconds ago      196.7 MB
+

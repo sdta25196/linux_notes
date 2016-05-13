@@ -1,6 +1,7 @@
 1. pre-work
     Download: http://cn2.php.net/distributions/php-5.4.45.tar.bz2
     Decompress Archive: tar jxf php* ; cd php*
+    Dependency Libs: yum install -y bzip2-devel openssl-devel libxml2-devel zlib-devel libjpeg-turbo-devel libpng-devel freetype-devel epel-release libmcrypt-devel
 
 2. install
     ./configure \

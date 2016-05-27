@@ -36,7 +36,7 @@
 
 5. 修改配置文件
 cp php.ini-production /usr/local/php/etc/php.ini
-cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf4. echo $? ; make ; make install
+cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
 
 6. 修改配置文件
 ;php主配置文件

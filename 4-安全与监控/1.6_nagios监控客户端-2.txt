@@ -2,7 +2,7 @@
 
 使用nrpe的插件探测被监控的设备的信息，以下第一步在主控端操作，也就是监控端
 1. 编辑监控端的配置文件，在文件最后追加下面的内容
-vi /etc/nagios/objects/command.cfg
+vi /etc/nagios/objects/commands.cfg
 define command{
     command_name
     command_line

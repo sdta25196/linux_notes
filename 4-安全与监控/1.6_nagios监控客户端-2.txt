@@ -10,7 +10,7 @@ define command{
     $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
 }
 
-#继续编辑被监制的子配置文件，只需要追加一些内容，使用nrpe获取主机信息
+#继续编辑监控端（服务端）配置文件，只需要追加一些内容，使用nrpe获取主机信息
 vi /etc/nagios/conf.d/192.168.3.173.cfg
 define host{
         use                         linux-server            ; Name of host template to use

@@ -1,0 +1,45 @@
+Docker仓库管理
+1、docker pull registry //下载registry镜像，registry为docker官方提供的一个镜像，我们可以用它来创建本地的docker私有仓库
+2、docker run -d -p 5000:5000 registry	//以registry镜像为启动容器，其中前面的5000表示是的宿主机的端口，后面的是docker的5000端口，表示把宿主机的5000端口映射到docker容器的5000端口，不然虽然你docker里面可以ping通外网，但是外网却不能访问你的docker私有仓库,这个就类似于virtualbox的网卡的端口映射，你在访问宿主机的5000端口时，实质上是访问docker容器的5000端口。
+	curl 127.0.0.1:5000 //curl可以访问它
+3、上传一个镜像到私有仓库
+	//上传到私有仓库，必须先打一个标记
+	docker tag centos_custom 192.168.3.61:5000/centos	//标记一下tag，必须带有私有仓库的ip:porpt,192.168.3.61:5000/centos这个名字可以自定义
+	//上传镜像到本地的私有仓库
+	docker push 192.168.3.61:5000/centos	//这个ip是本地宿主机的ip，后面的centos是可以自己定义的，要和上面定义的一致，如果再现类似下面的错误，192.168.3.61:5000/centos，这个可以通过docker images来查看到，所以说要和上面的一致
+	“Error response from daemon: invalid registry endpoint https://192.168.3.61:5000/v0/:
+	 unable to ping registry endpoint https://192.168.3.61:5000/v0
+	 v2 ping attempt failed with error: Get https://192.168.3.61:5000/v2/: EOF
+	 v1 ping attempt failed with error: Get https://192.168.3.61:5000/v1/_ping: EOF. if this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add `--insecure-registry 192.168.3.61:5000` to the daemon's arguments. In the case of HTTPS, if you have access to the registry's CA certificate, no need for the flag; simply place the CA cerficate at /etc/docker/cert.d/192.168.3.61:5000/ca.crt ”
+	 这是因为Docker自从1.3.X之后，与docker registry交互默认使用https，然而此处搭建的私有仓库只提供http服务，所以当私有仓库交互就会报上面的错误。
+	 为了解决这个问题，需要在启动docker server时增加启动参数默认为https访问，解决该问题的方法如下；
+	vim /etc/init.d/docker
+	把$exec -d $other_args &>> $logfile &修改为  $exec -d --insecure-registry 192.168.3.61:5000 $other_args &>> $logfile &
+
+	//重启docker服务
+	/etc/init.d/docker restart
+
+	//启动registry仓库
+	[root@cherry ~]# docker run -d -p 5000:5000 registry
+	03c52a39c1ce3586d7aed21b30431d1d0350ac65d2719b5e3c8d3aea1a62d969
+	[root@cherry ~]# docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+	03c52a39c1ce        registry            "docker-registry"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   goofy_banach        
+	[root@cherry ~]# docker ps -a
+	CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+	03c52a39c1ce        registry            "docker-registry"   6 seconds ago       Up 6 seconds        0.0.0.0:5000->5000/tcp   goofy_banach
+
+	//上传镜像到私有仓库
+	# docker push 192.168.3.61:5000/busybox
+	The push refers to a repository [192.168.3.61:5000/busybox] (len: 1)
+	Sending image list
+	Pushing repository 192.168.3.61:5000/busybox (1 tags)
+	4185ddbe03f8: Image successfully pushed 
+	b05baf071fd5: Image successfully pushed 
+	3cbb82dd8c38: Image successfully pushed 
+	Pushing tag for rev [3cbb82dd8c38] on {http://192.168.3.61:5000/v1/repositories/busybox/tags/latest}
+
+	//查看已经上传到私有仓库的镜像
+	# curl 192.168.3.61:5000/v1/search
+	{"num_results": 1, "query": "", "results": [{"description": "", "name": "library/busybox"}]}
+

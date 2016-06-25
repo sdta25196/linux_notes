@@ -1,0 +1,20 @@
+Docker数据管理
+1、挂载本地的目录到docker容器里面
+	//-v用来指定挂载的目录，':'前面的目录为宿主机的本地目录，‘:’后面的目录为docker容器里面的目录
+	docker run -itd -v /tmp/:/mnt/tmp_mount centos /bin/bash
+	docker exec -it 06fd71376bb5d3fe /bin/bash
+	//这里/tmp/tmp_mount下的文件和宿主机和/tmp目录下的文件是一致的。
+	ls /mnt/tmp_mount
+	mylog.txt  passwd  yum.log  yum.log.bak
+
+2、挂载数据卷
+	我们挂载目录的时候，可以指定容器的name，如果不指定，系统就随机定义了，比如前面没有指定name，它就随便生成一个名为的名字，关于name可以通过docker ps查看，在最后一列
+	//查看已经启动了的容器，可以看到容器06fd71376bb5的name为distracted_hodgkin
+	docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+	b984be39e34e        centos              "/bin/bash"         14 seconds ago      Up 13 seconds                                stoic_stallman       
+	06fd71376bb5        centos              "/bin/bash"         6 minutes ago       Up 6 minutes                                 distracted_hodgkin   
+	03c52a39c1ce        registry            "docker-registry"   22 minutes ago      Up 22 minutes       0.0.0.0:5000->5000/tcp   goofy_banach     
+
+	// mounted_volume为容器的数据卷，也就是说我们再启动一个新的容器的时候可以使用name为distracted_hodgkin容器已经挂载了的数据卷，即/mnt/tmp_mount目录
+	docker run -itd --volumes-from distracted_hodgkin  centos  /bin/bash

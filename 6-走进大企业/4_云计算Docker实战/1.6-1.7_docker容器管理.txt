@@ -55,7 +55,7 @@
 8. 容器导出
     # docker export 38  > centos_export.tar
 
-9. 容器导出
+9. 容器导入
     # cat centos_export.tar | docker import - am_centos
     30e2ee647f5d235fe9bcc2033f2378051c2046c97d5d8e3ed6cd03c61bcffa88
     # docker images

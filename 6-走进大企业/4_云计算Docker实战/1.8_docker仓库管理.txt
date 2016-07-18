@@ -1,7 +1,12 @@
 Docker仓库管理
-1、docker pull registry //下载registry镜像，registry为docker官方提供的一个镜像，我们可以用它来创建本地的docker私有仓库
-2、docker run -d -p 5000:5000 registry	//以registry镜像为启动容器，其中前面的5000表示是的宿主机的端口，后面的是docker的5000端口，表示把宿主机的5000端口映射到docker容器的5000端口，不然虽然你docker里面可以ping通外网，但是外网却不能访问你的docker私有仓库,这个就类似于virtualbox的网卡的端口映射，你在访问宿主机的5000端口时，实质上是访问docker容器的5000端口。
+
+1、 registry为docker官方提供的一个镜像，我们可以用它来创建本地docker私有仓库
+	docker pull registry //下载registry镜像，registry为docker官方提供的一个镜像，我们可以用它来创建本地的docker私有仓库
+
+2、以registry镜像启动容器，并且监听5000端口
+docker run -d -p 5000:5000 registry	//以registry镜像为启动容器，其中前面的5000表示是的宿主机的端口，后面的是docker的5000端口，表示把宿主机的5000端口映射到docker容器的5000端口，不然虽然你docker里面可以ping通外网，但是外网却不能访问你的docker私有仓库,这个就类似于virtualbox的网卡的端口映射，你在访问宿主机的5000端口时，实质上是访问docker容器的5000端口。
 	curl 127.0.0.1:5000 //curl可以访问它
+
 3、上传一个镜像到私有仓库
 	//上传到私有仓库，必须先打一个标记
 	docker tag centos_custom 192.168.3.61:5000/centos	//标记一下tag，必须带有私有仓库的ip:porpt,192.168.3.61:5000/centos这个名字可以自定义
@@ -43,3 +48,5 @@ Docker仓库管理
 	# curl 192.168.3.61:5000/v1/search
 	{"num_results": 1, "query": "", "results": [{"description": "", "name": "library/busybox"}]}
 
+4. 将镜像上传至本地私有仓库
+    docker tag cf_test 192.168.3.253:5000/centos

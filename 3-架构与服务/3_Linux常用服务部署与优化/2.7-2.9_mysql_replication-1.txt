@@ -60,7 +60,7 @@
     mysql -S /tmp/mysql_slave.sock master < /root/mysql_dump/mysql_master.sql
 
     #先暂停同步
-    slave stop;
+    stop slave ;
 
     ################ 下面这一步非常的关键！！！#####################
     ##
@@ -70,7 +70,7 @@
     mysql -uroot -S /tmp/mysql_slave.sock -e "unlock tables"
 
     #最后一步
-    slave start;
+    start slave;
 
 
     #查看同步状态，如果出现下面两行，则表示配置不成功。

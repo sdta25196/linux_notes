@@ -1,7 +1,7 @@
 1. client login configuration
 SERVER:
     #### it means grant all database and all tables to root on host 192.168.3.17, password is ubuntu;
-	#### 授权给root用户可以从192.168.3.17登录，密码是ubuntu，如果要授权所有的ip，可以使用%来表示所有的ip,如
+    #### 授权给root用户可以从192.168.3.17登录，密码是ubuntu，如果要授权所有的ip，可以使用%来表示所有的ip,如
     grant all on *.* to 'root'@'192.168.3.17' identified by 'ubuntu';
     grant all on *.* to 'root'@'%' identified by 'ubuntu';
 

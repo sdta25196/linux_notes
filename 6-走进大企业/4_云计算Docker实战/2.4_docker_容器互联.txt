@@ -1,0 +1,12 @@
+Docker网络管理－容器互联
+
+1、下载一个mysql镜像
+    docker pull mysql
+
+2、新建一个容器，名为db
+    docker run -it -d -p 13306:3306 --name db mysql /bin/bash
+
+3、再新建一个web容器，并且和db互联
+    docker run -it -d -p 12308:80 --name web --link db:db centos_with_httpd bash
+
+4、在web上运行env命令可以看到关于db的环境变量

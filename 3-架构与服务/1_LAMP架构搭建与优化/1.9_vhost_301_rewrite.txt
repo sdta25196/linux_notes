@@ -17,7 +17,7 @@ Content-Type: text/html; charset=iso-8859-1
 
 
 <VirtualHost *:80>
-    ServerAdmin jusontech@gmail.com
+    ServerAdmin jasontech@gmail.com
     DocumentRoot "/data/www/"
     ServerName www.cf.cc
     ServerAlias www.3201.cc
@@ -41,7 +41,7 @@ Content-Type: text/html; charset=iso-8859-1
 
 
 ####如果有多个别名，也一并要实现301跳转的话，则跳转条件需要多个并且需要加一个关键字[OR],如下
-ServerAdmin jusontech@gmail.com
+ServerAdmin jasontech@gmail.com
 DocumentRoot "/data/www/"
 ServerName www.cf.cc
 ServerAlias www.aaa.cc

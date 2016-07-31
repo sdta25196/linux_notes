@@ -2,4 +2,4 @@
 * 互联网发展日新月异，云计算技术已经成为主导，这也是必然趋势。以前企业每年花费在IDC上的费用非常昂贵，而现在把业务跑在云上，成本大大降低。越来越多的企业把业务迁移到云计算平台上。作为运维的我们，需要把握互联网的趋势，只有更上时代的脚步才不会被淘汰。Openstack是云计算范畴的一个框架，我们学习它对了解云计算非常有帮助。
 
 # OpenStack
-![OpenStack icon](https://wiki.openstack.org/wiki/File:Openstack-vertical-small.png)
+![OpenStack icon](./openstack.png)

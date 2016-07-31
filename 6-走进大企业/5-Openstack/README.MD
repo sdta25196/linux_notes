@@ -1,5 +1,4 @@
 # OpenStack
-### OpenStack
 ![OpenStack icon](./openstack.png)
 * 互联网发展日新月异，云计算技术已经成为主导，这也是必然趋势。
 * 以前企业每年花费在IDC上的费用非常昂贵，而现在把业务跑在云上，成本大大降低。

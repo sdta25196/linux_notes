@@ -1,0 +1,65 @@
+1、为什么要使用桥接网络
+    为了使本地网络中的机器和docker容器更方便的通信，我们经常会将docker容器的网络环境配置为和宿主机同一个网段，这个需要就需要使用桥接技术，将宿主机和docker容器桥接起来，再给docker容器配一个ip就可以了
+
+2、[以下是宿主机为centos7的配置]如何实现宿主机到docker容器的网络桥接
+    A、宿主机安装pipework
+    git clone https://github.com/jpetazzo/pipework
+    cp pipework/pipework
+
+    B、开启docker容器，不指定网络配置
+    docker run -itd --net=none --name bridge_ntwk centos /bin/bash
+    91d4e86de5a4728002b157c9f308efd37eedd3a29dfe129dffb59682b1e13ed9
+
+    C、宿主机来配置网桥
+    # 这里bridge_ntwk是刚刚创建容器的name，192.168.3.105为容器的ip，192.168.3.61是宿主机的ip
+    pipework bridge_ntwk 192.168.3.105/24@192.168.3.61
+
+    D、把br0和eth0桥接起来
+    brctl addif br0 eth0
+
+    E、把宿主机的ip和br0接口绑定起来
+    ip addr add 192.168.3.61/24 br0
+
+    F、到此就配置完成了，可以进入容器查看网络配置了，由于目前使用的centos6的系统，所以这个并没有做测试
+
+3、[以下是宿主机为centos6的操作]
+    A、编辑配置文件，生成br0接口
+    cp /etc/sysconfig/network-scripts/{ifcfg-eth0,ifcfg-br0}
+
+    cat /etc/sysconfig/network-scripts/ifcfg-br0
+    DEVICE=br0
+    TYPE=Bridge
+    ONBOOT=yes
+    NM_CONTROLLED=yes
+    BOOTPROTO=static
+    IPADDR=192.168.3.61
+    NETMASK=255.255.255.0
+    GATEWAY=192.168.3.1
+    DNS1=192.168.3.1
+
+    cat /etc/sysconfig/network-scripts/ifcfg-eth0
+    DEVICE=eth0
+    HWADDR=08:00:27:ED:C2:9A
+    TYPE=Ethernet
+    UUID=d1c989cf-8688-43b0-b350-c1cf5cfb78d1
+    ONBOOT=yes
+    BRIDGE=br0
+    NM_CONTROLLED=yes
+
+    /etc/init.d/network restart
+
+    B、安装pipework工具
+    git clone https://github.com/jpetazzo/pipework
+    cp pipework/pipework
+
+    C、开启一个新的容器，网络类型为none
+    docker run -itd --net=none --name docker_bridge_network centos /bin/bash
+    3e5f472a145fd197b9d429863663a913b8466710174acef9f33e7db6dd2a7ea6
+
+    D、安装iproute-2.6.32-130.el6ost.netns.2.x86_64.rpm，不然会出现“Object ‘netns’ is unknown，try ‘ip help’”
+    rpm -Uvh https://repos.fedorapeople.org/openstack/EOL/openstack-grizzly/epel-6/iproute-2.6.32-130.el6ost.netns.2.x86_64.rpm
+
+    E、给docker容器配置一个ip地址
+    pipework br0 docker_bridge_network 192.168.3.66/24
+
+    F、进入docker容器，查看分配到的ip地址，是否可以ping通网关

@@ -1,0 +1,65 @@
+Docker网络管理－容器互联
+
+1、下载一个mysql镜像
+    docker pull mysql
+
+2、新建一个容器，名为db
+    docker images
+    REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+    <none>              <none>              3690474eb5b4        2 weeks ago         0 B
+    busybox             latest              b05baf071fd5        3 weeks ago         1.093 MB
+    mysql               latest              9d1815a56faf        5 weeks ago         380.2 MB
+
+    # 
+    docker run -itd -p 13306:3306 --name hungry_pike mysql /bin/bash
+    c883a072573710e5341a23cceeabdc86764c15bc9973c6885c11937f85b2d268
+
+    docker exec -it c8 /bin/bash
+    /etc/init.d/mysql restart
+
+3、再新建一个web容器，并且和db互联
+    # 创建一个容器，映射8888端口到docker容器的80端口，并且和已经创建的mysql容器互联
+    docker run -itd -p 8888:80 --name web --link hungry_pike:mysql_db centos /bin/bash
+    1c66e967fc76b3a8119aa2cad89d5373eb6f9d5390f1bd1595b72d5d6ee0779f
+
+    docker exec -it 1c66 /bin/bash
+    yum install -y httpd
+    httpd -k start
+
+    cat << EOF > /var/www/html/index.html
+    > welcom to my docker container.
+    > EOF
+
+4、在web上运行env命令可以看到关于db的环境变量
+    在创建好容器后，就可以直接使用name来进入容器了，如下
+    docker ps
+    CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                  NAMES
+    1c66e967fc76        centos              "/bin/bash"            18 minutes ago      Up 18 minutes       0.0.0.0:8888->80/tcp   web                 
+    c883a0725737        mysql               "docker-entrypoint.s   31 minutes ago      Up 31 minutes       3306/tcp               hungry_pike         
+    [root@unexpress ~]# docker exec -it hungry_pike bash
+    root@c883a0725737:/# ip addr 
+    5: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP 
+    link/ether 02:42:c0:a8:2a:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.42.2/24 scope global eth0
+
+    # 进入web容器查看环境变量env
+    docker exec -it web /bin/bash
+    [root@1c66e967fc76 /]# env
+    HOSTNAME=1c66e967fc76
+    MYSQL_DB_ENV_MYSQL_MAJOR=5.7
+    MYSQL_DB_PORT_3306_TCP=tcp://192.168.42.2:3306
+    TERM=xterm
+    MYSQL_DB_ENV_GOSU_VERSION=1.7
+    MYSQL_DB_PORT_3306_TCP_PORT=3306
+    LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=01;05;37;41:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=01;36:*.au=01;36:*.flac=01;36:*.mid=01;36:*.midi=01;36:*.mka=01;36:*.mp3=01;36:*.mpc=01;36:*.ogg=01;36:*.ra=01;36:*.wav=01;36:*.axa=01;36:*.oga=01;36:*.spx=01;36:*.xspf=01;36:
+    MYSQL_DB_ENV_MYSQL_VERSION=5.7.13-1debian8
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    PWD=/
+    MYSQL_DB_PORT_3306_TCP_PROTO=tcp
+    LANG=en_US.UTF-8
+    SHLVL=1
+    HOME=/root
+    MYSQL_DB_PORT_3306_TCP_ADDR=192.168.42.2
+    MYSQL_DB_NAME=/web/mysql_db
+    MYSQL_DB_PORT=tcp://192.168.42.2:3306
+    _=/usr/bin/env

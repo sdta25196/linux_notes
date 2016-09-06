@@ -1,0 +1,59 @@
+*** Docker网络管理－外部访问容器
+**  思路
+* 1、创建一个容器，在这个容器里面安装http服务
+  2、把刚刚创建的容器生成一个新的镜像，再使用这个镜像创建容器，并指定端口映射，因为端口映射只能在容器启动或者是创建的时候来指定，所以需要这个步骤
+  3、进入到该容器，开启httpd服务，然后编写测试面试
+  4、最后就是外部测试
+
+* 具体步骤
+  1、查看可以的镜像，这里就使用b6这个centos镜像
+  docker ps
+  CONTAINER ID        IMAGE                 COMMAND             CREATED             STATUS              PORTS               NAMES
+  d29b1125d6fb        gentoo/stage3-amd64   "/bin/bash"         29 minutes ago      Up 29 minutes                           gentoo               
+  b6faca98c6ce        centos                "/bin/bash"         3 weeks ago         Up 56 minutes                           hungry_ardinghelli   
+  
+  docker exec -it b6faca bash
+  
+  2、安装httpd服务
+  yum install -y httpd
+  httpd start
+  
+  3、使用刚刚安装了httpd的容器导出一个镜像
+  docker commit -m "centos_with_httpd" -a "author_is_chang.feng" b6faca98c6ce centos_with_httpd:pattern_tag
+  f232a469b5883ec7ac33c72c50cf3298b98df0bb4791580d6907c76f473b8a43
+
+  可以查看到刚刚创建的镜像
+  docker images
+  REPOSITORY                  TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+  centos_with_httpd           pattern_tag         f232a469b588        42 seconds ago      316.9 MB
+  gentoo/stage3-amd64         latest              4d2e0e1887aa        3 weeks ago         835.6 MB
+  import_container            latest              0bd389ffd347        3 weeks ago         1.093 MB
+  192.168.3.61:5000/busybox   latest              3cbb82dd8c38        3 weeks ago         1.094 MB
+  busybox                     latest              3cbb82dd8c38        3 weeks ago         1.094 MB
+  busybox_custom              latest              b05baf071fd5        3 weeks ago         1.093 MB
+  busybox_custom              renew               b05baf071fd5        3 weeks ago         1.093 MB
+  centos                      latest              2a332da70fd1        6 weeks ago         196.7 MB
+  centos_custom               latest              2a332da70fd1        6 weeks ago         196.7 MB
+  registry                    latest              07d93e41c370        5 months ago        422.8 MB
+
+  4、创建一个新的容器，然后进行端口映射
+  docker run -itd -p 8080:80 centos_with_httpd:pattern_tag /bin/bash
+  54a67aa52f93551bcf4ba257dc495988026058a732acb477f0441dc0acd0b904
+
+  5、进入容器，然后编辑index.html文件
+  cat << eof > /var/www/html/index.html
+  <html>
+  	<h1>If you can see this page, Because you can thoughout my host and access my Docker Container</h1>
+  </html>
+  eof
+  
+  这个时候已经可以看到PORTS已经可以看到端口映射关系
+  docker ps
+  CONTAINER ID        IMAGE                           COMMAND             CREATED             STATUS              PORTS                  NAMES
+  54a67aa52f93        centos_with_httpd:pattern_tag   "/bin/bash"         7 minutes ago       Up 7 minutes        0.0.0.0:8080->80/tcp   elated_bardeen       
+  d29b1125d6fb        gentoo/stage3-amd64             "/bin/bash"         45 minutes ago      Up 45 minutes                              gentoo               
+  b6faca98c6ce        centos                          "/bin/bash"         3 weeks ago         Up About an hour                           hungry_ardinghelli   
+
+  6、测试
+  http://host_ip:8080
+

@@ -9,7 +9,12 @@
  当我们从硬盘读数据的时候，会先把数据放在内存的一个区域，这个就是所谓的cached，cpu要处理的时候直接在内存中拿就可以。
  同理，当cpu要向硬盘中写数据时，并不直接写到硬盘，而是先放在内存的一个区域中，这个时候，这段区域就叫buffers
  
+ 
+    A buffer is something that has yet to be "written" to disk.
+    A cache is something that has been "read" from the disk and stored for later use.
+
 下面的公式恒成立：
 free + buffers + cached = (-/+ buffers)->free
+(-/+ buffers/cache)->used = Mem->free -> Mem-buffers - Mem->cached
 (-/+ buffers)->free + (-/+ buffers)used = Mem->total
  buffers和cached列的数字分别表示buffers和cached还有多少剩余

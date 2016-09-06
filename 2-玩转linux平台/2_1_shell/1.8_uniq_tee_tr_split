@@ -1,19 +1,21 @@
-2016-2-25 22:04:22
-1.8 uniq - report or omit repeated lines, used with sort
-		-c, --count
+##uniq - report or omit repeated lines, used with sort
+uniq一般只和sort结合使用，很少单独使用
+	-c, --count
 			prefix lines by the number of occurrences
-	tee - read from standard input and write to standard output and files.
-		tee只会把正确的信息重定向到文件中，错误的不会，如下：
-		[root@CH ~]# ls
-		1.txt  3.txt  anaconda-ks.cfg  b.txt  date.sh         install.log      install.log.syslog  test
-		2.txt  aa     a.txt            c.txt  ifcfg-eth0.bak  install.log.bak  paswd
-		[root@CH ~]# ls 3.txt  5.txt | tee 1.txt
-		ls: cannot access 5.txt: No such file or directory
-		3.txt
-		[root@CH ~]# cat 1.txt
-		3.txt
-		[root@CH ~]#
-1.9 tr - translate or delete characters
+    -d 只显示重复的行
+
+##tee - read from standard input and write to standard output and files.
+	tee只会把正确的信息重定向到文件中，错误的不会，如下：
+	[root@CH ~]# ls
+	1.txt  3.txt  anaconda-ks.cfg  b.txt  date.sh         install.log      install.log.syslog  test
+	2.txt  aa     a.txt            c.txt  ifcfg-eth0.bak  install.log.bak  paswd
+	[root@CH ~]# ls 3.txt  5.txt | tee 1.txt
+	ls: cannot access 5.txt: No such file or directory
+	3.txt
+	[root@CH ~]# cat 1.txt
+	3.txt
+
+##tr - translate or delete characters
 	[root@CH ~]# echo 'adsljfl;adjfl'  | tr 'a-z' 'A-Z'
 	ADSLJFL;ADJFL
 	[root@CH ~]# echo 'adsljfl;adjfl'  | tr 'a-f' 'A-Z'	

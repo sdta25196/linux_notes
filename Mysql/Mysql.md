@@ -21,7 +21,7 @@ mysql> show variables like 'autocommit';
 show table status like 'user' \G
 
 ##Mysql默认存储引擎
-	默认存储引擎是MyISAM，
-	优点：全文索引（Full-Text Indexing），压缩，空间函数（GIS）
-	不足：不事务，行级锁
-	MyISAM将每张表存储成两个文件，数据文件和索引文件，扩展名为.MYD和.MYI
+默认存储引擎是MyISAM，
+`*优点*`：全文索引（Full-Text Indexing），压缩，空间函数（GIS）
+`*不足*`：不事务，行级锁
+MyISAM将每张表存储成两个文件，数据文件和索引文件，扩展名为.MYD和.MYI

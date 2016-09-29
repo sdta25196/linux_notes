@@ -1,0 +1,34 @@
+参考文档：
+http://www.nginx.cn/1934.html
+http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=11101&fromuid=6919
+# lamp一键安装脚本
+http://www.apelearn.com/bbs/thread-8119-1-1.html
+
+#! /usr/bin/expect 表示解释器不是bash，所以也不可以使用sh 或者是/bin/bash script_name.sh的方式来执行，只能通过添加执行权限使用相对或者是绝对路径来执行，或者是expect expect_script_file
+expect auto_login.exp
+
+spawn 是expect的内置命令，熟悉就可以了，和为什么列出目录要用ls 一样
+
+expect { "yes/no" ... "passwd:" } 其实就是避免交互而自动填充的值，yes 和 passwd:其实语法是截取的最后一段，如
+Are you sure you want to continue connecting (yes/no)?
+root@192.168.3.175's password:
+
+expect timeout的作用
+http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=6903&fromuid=6919
+
+4.0*开始为第二部分：构建一个文件分发系统
+a. 需求背景
+对于大公司而言，肯定时不时会有网站或者配置文件更新，而且使用的机器肯定也是好多台，少则几台，多则几十甚至上百台。所以，自动同步文件是至关重要的。
+
+b. 实现思路
+首先要有一台模板机器，把要分发的文件准备好，然后只要使用expect脚本批量把需要同步的文件分发到目标机器即可。
+c. 核心命令
+rsync -av --files-from=list.txt  /  root@host:/
+d. 文件分发系统的实现
+
+#4.0_file_distribute_system.sh 这个脚本调用4.0_file_distribute_system.exp脚本，通过--files-from参数指定需要同步的文件列表，其中这个文件列表中可以不带根目录
+# 经过测试发现，/tmp/123 和tmp/123效果是一样，这个可能是处理机制的问题，但是后面的/却不知道是什么含义。spawn rsync -avp --files-from=$file / root@$host:/var/tmp
+4.0_file_distribute_system.sh -> ip.list, file
+
+# expect "]*" 这里的]*是什么意思
+[root@MASTER expect]# 其实就是命令提示符的最后面两个字符

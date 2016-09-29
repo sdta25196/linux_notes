@@ -1,0 +1,21 @@
+1. ntsysv, yum install -y ntsysv
+2. setup --> "System Services"
+
+chkconfig --level service_name on/off
+chkconfig --level 12345 service_name on/off
+chkconfig --level 124 service_name on/off #config the level 124 to on or off
+
+[root@server ~]# chkconfig --level 3 sysstat on
+[root@server ~]# chkconfig --level 2 sysstat on
+[root@server ~]# chkconfig --list sysstat
+sysstat         0:off1:on2:on23:on234:off15:off156:off
+[root@server ~]# chkconfig --level 123 sysstat off
+[root@server ~]# chkconfig --list sysstat
+sysstat         0:off1:off12:off123:off1234:off12345:off123456:off
+[root@server ~]# 
+
+3. add or delete a service 
+chkconfig --add service_name
+chkconfig --del service_name
+
+refer to:http://www.apelearn.com/study_v2/chapter18.html#nginx

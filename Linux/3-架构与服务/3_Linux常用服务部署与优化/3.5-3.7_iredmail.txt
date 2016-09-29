@@ -1,0 +1,88 @@
+1. iRedMail 套件
+    postfix：发邮件
+    dovecot：收邮件
+    apache：web版的收、发邮件
+    mysql：数据存在mysql中
+    openldap：可选，存储数据
+    policyd：邮件黑、白名单
+    amavisd：杀毒、扫描垃圾邮件
+    roundcube：web端发邮件
+    awstat：日志分析
+    fail2ban：防止暴力破解
+    iRedAdmin：管理邮件，添加账户
+
+2. 软件下载
+    wget　https://bitbucket.org/zhb/iredmail/downloads/iRedMail-0.9.4.tar.bz2
+    tar jzvf iRedMail*
+    cd iRed*
+    cd pkgs
+    在iRedMail.sh和pkgs/get_all.sh脚本的首先添加IREDMAIL_MIRROR='http://42.159.241.31'，主要是因为它默认会去http://iredmail.org官网去下载信赖的包，但是现在官网已经不是这个网址了，所以需要修改为可用的镜像站点。如果已安装多次没有成功，则需要把/etc/yum.repo.d/目录下关于iredmail的.repo文件给删除掉，再重新安装就可以从指定站点下载信赖的包了。
+    hostname mail.changfeng.com
+    修改/etc/hosts，在127.0.0.1 后面添加mail.changfeng.com
+    /bin/bash iRedMail.sh
+
+2.1 安装建议
+    最好用一台全新的机器，只安装iRedMail，其它的不用安装，iRedMail的套件，安装程序会根据信赖自己安装相应的套件。
+    安装前需要先配置一个hostname，而且还要在/etc/hosts中添加
+    如果没有一次安装成功，需要根据相关的提示和日志分析可能出现的原因
+
+3. 安装完成后可以用下面的命令启动服务
+for s in httpd iredapd amavisd clamd postfix dovecot cbpolicyd spamassassin clam.amavisd saslauthd fail2ban;
+    do /etc/init.d/$s restart;
+done
+    
+4. iRedMail使用
+使用下面的两个地址可以验证安装是否成功，
+[root@localhost ~]# cat iRedmailInfo.txt 
+*************************************************************************
+***************************** WARNING ***********************************
+*************************************************************************
+*                                                                       *
+* Below file contains sensitive infomation (username/password), please  *
+* do remember to *MOVE* it to a safe place after installation.          *
+*                                                                       *
+*   * /usr/local/src/iRedMail-0.9.4/config
+*                                                                       *
+*************************************************************************
+********************** Review your settings *****************************
+*************************************************************************
+
+* Storage base directory:               /var/vmail
+* Mailboxes:                            /var/vmail/vmail1
+* Daily backup of SQL/LDAP databases:   /var/vmail/backup
+* Store mail accounts in:               MySQL
+* Web server:                           Apache
+* First mail domain name:               mail.cf.com
+* Mail domain admin:                    postmaster@mail.cf.com
+* Additional components:                "iRedAdmin" "Roundcubemail" "Awstats" "Fail2ban"
+
+********************************************************************
+* URLs of installed web applications:
+*
+* - Roundcube webmail: httpS://mail.changfeng.com/mail/
+*
+* - Web admin panel (iRedAdmin): httpS://mail.changfeng.com/iredadmin/
+*
+* You can login to above links with below credential:
+*
+* - Username: postmaster@mail.cf.com
+* - Password: admin
+*
+*
+********************************************************************
+* Congratulations, mail server setup completed successfully. Please
+* read below file for more information:
+*
+*   - /usr/local/src/iRedMail-0.9.4/iRedMail.tips
+*
+* And it's sent to your mail account postmaster@mail.cf.com.
+*
+********************* WARNING **************************************
+*
+* Please reboot your system to enable all mail services.
+*
+********************************************************************
+    
+4. 参考文档
+    http://www.apelearn.com/bbs/forum.php?mod=viewthread&tid=10552&pid=135093&page=1&extra=#pid135093
+    

@@ -1,0 +1,66 @@
+1、visudo其实是编辑/etc/sudoers
+wilsh	ALL=(root)	/bin/ls
+wilsh	ALL=(root)	NOPASSWD: /bin/ls #表示不用输入密码就可以执行命令
+wilsh		表示可以使用sudo的用户
+All=(root)	ALL表示可以从任何地方登录，也可以是网络位置，表示所有的来源ip，root表示可以执行root的命令
+/bin/ls		/bin/ls这个是具体可以执行的命令，这个位置一定要写命令的绝对路径
+2、sudo -l可以查看当前用户可以执行sudo的命令
+[wilsh@centos root]$ sudo -l
+Matching Defaults entries for wilsh on this host:
+requiretty, !visiblepw, always_set_home, env_reset, env_keep="COLORS DISPLAY HOSTNAME HISTSIZE
+INPUTRC KDEDIR LS_COLORS", env_keep+="MAIL PS1 PS2 QTDIR USERNAME LANG LC_ADDRESS LC_CTYPE",
+env_keep+="LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES", env_keep+="LC_MONETARY
+LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE", env_keep+="LC_TIME LC_ALL LANGUAGE LINGUAS
+_XKB_CHARSET XAUTHORITY", secure_path=/sbin\:/bin\:/usr/sbin\:/usr/bin
+					
+User wilsh may run the following commands on this host:
+(root) /bin/ls
+[wilsh@centos root]$ """"""""""
+
+以下为教材的内容，备忘
+命令 : sudo
+
+用su是可以切换用户身份，如果每个普通用户都能切换到root身份，如果某个用户不小心泄漏了root的密码，那岂不是系统非常的不安全？没有错，为了改进这个问题，产生了sudo这个命令。使用sudo执行一个root才能执行的命令是可以办到的，但是需要输入密码，这个密码并不是root的密码而是用户自己的密码。默认只有root用户能使用sudo命令，普通用户想要使用sudo，是需要root预先设定的，即，使用 visudo 命令去编辑相关的配置文件/etc/sudoers. 如果没有visudo这个命令，请使用 yum install -y sudo 安装。
+
+默认root能够sudo是因为这个文件中有一行 “root ALL=(ALL) ALL” 在该行下面加入 “test ALL=(ALL) ALL” 就可以让test用户拥有了sudo的权利。使用 “visudo” 命令编辑/etc/sudoers配置文件，其实它的操作方法和前面阿铭介绍的 “vi” 命令使用方法是一样的，按 ‘i’ 进入编辑模式，编辑完成后，按 “Esc” ，再输入 ”:wq” 完成保存。
+
+## Allow root to run any commands anywhere
+root    ALL=(ALL)       ALL
+test    ALL=(ALL)       ALL
+此时可以验证一下test账户的权限了。
+
+[root@localhost ~]# su test
+[test@localhost root]$ ls
+ls: 无法打开目录.: 权限不够
+[test@localhost root]$ sudo ls
+
+We trust you have received the usual lecture from the local System
+Administrator. It usually boils down to these three things:
+
+    #1) Respect the privacy of others.
+    #2) Think before you type.
+    #3) With great power comes great responsibility.
+
+[sudo] password for test:
+123  456  789  anaconda-ks.cfg  dirb  install.log  install.log.syslog  test  test1  test2  test3
+由于切换到test账户后的当前目录依旧是在/root 下，test账户没有任何权限，所以 ‘ls’ 的时候提示说权限不够，然而使用 sudo ls 输入test账户自身的密码后就有权限了。初次使用sudo 时会有上面的一大段提示，而后再次使用sudo 命令则不再提示。
+
+如果每增加一用户就设置一行，这样太麻>烦了。所以你可以这样设置。把 “# %wheel ALL=(ALL) ALL” 前面的 ‘# ‘ 去掉，让这一行生效。它的意思是，wheel这个组的所有用户都拥有了sudo的权利。接下来就需要你把想让有sudo权利的所有用户加入到wheel这个组中即可。
+
+## Allows people in group wheel to run all commands
+%wheel  ALL=(ALL)       ALL
+配置文件/etc/sudoers包含了诸多配置项，可以使用命令 man sudoers 来获得帮助信息。下面阿铭介绍一个很实用的案例，我们的需求是把Linux服务器设置成这个样子：只允许使用普通账户登陆，而普通账户登录后，可以不输入密码就能sudo切换到root账户。下面但是阿铭的配置：
+
+[root@localhost ~]# visudo
+然后在文件的最后面加入三行：
+
+User_Alias USER_SU = test, test1, aming
+Cmnd_Alias SU = /bin/su
+USER_SU ALL=(ALL) NOPASSWD: SU
+保存配置文件后，使用test, test1, aming 三个账户登陆Linux后，执行命令 sudo su - 切换到root账户，获取root账户的所有权利。
+
+[root@localhost ~]# su - test
+[test@localhost ~]$ sudo su -
+[root@localhost ~]# whoami
+root
+而不让root直接登陆，这个简单，设置一个非常复杂连自己都记不住的密码。不过这样也有一个问题，就是普通用户可以su到root，然后他再自己修改简单的密码就能直接root登陆了不是嘛？的确有这个问题，其实阿铭还有一个更好的办法，会在后面的扩展学习章节中介绍。

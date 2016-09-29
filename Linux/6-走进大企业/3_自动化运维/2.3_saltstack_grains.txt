@@ -1,0 +1,93 @@
+Saltstack － Grains
+    a、grains是在minion启动时收集到的一些信息，比如操作系统类型、网卡ip、内核版本、cpu架构等
+    b、salt常用操作
+    salt-key 
+    Accepted Keys:
+    Client.Saltstack
+    Server.Saltstack
+    Denied Keys:
+    Unaccepted Keys:
+    Rejected Keys:
+    1. [root@Server ~]# salt 'Client.Saltstack' grains.ls
+    Client.Saltstack:
+        - SSDs
+        - biosreleasedate
+        - biosversion
+        - cpu_flags
+        - cpu_model
+        - cpuarch
+        - domain
+        - fqdn
+        - fqdn_ip4
+        - fqdn_ip6
+        ... ...
+    2. [root@Server ~]# salt 'Client.Saltstack' grains.items
+    Client.Saltstack:
+        ----------
+        SSDs:
+        biosreleasedate:
+        12/01/2006
+        biosversion:
+        VirtualBox
+        cpu_flags:
+        - fpu
+        - vme
+        - de
+        - pse
+        - tsc
+        - msr
+        - pae
+        - mce
+        - cx8
+        - apic
+        - sep
+        ... ...
+
+    c、grain的信息并不是动态的，并不会实时更新，只是在minion启动时收集到的。
+    d、我们可以根据grain启动时收集到的信息，做配置管理
+    e、grain支持自定义信息
+
+saltstack - 自定义grains
+1. 在client端上创建/etc/salt/grains文件，添加以下内容
+cat /etc/salt/grains 
+role: nginx
+env: test
+myname: changfeng.com
+mydomain: cf.com.cn
+2. 重启服务
+/etc/init.d/salt-minion restart
+3. server端上的操作，
+    a. 获取grains
+    salt 'Client.Saltstack' grains.items
+    salt 'Client.Saltstack' grains.ls
+    salt 'Client.Saltstack' grains.item env mydomain myname role
+    Client.Saltstack:
+    ----------
+    env:
+        test
+    mydomain:
+        cf.com.cn
+    myname:
+        changfeng.com
+    role:
+        nginx
+    b. 可以借助grains的一些属性信息来执行指定的命令
+    salt -G role:nginx cmd.run 'w'
+    Client.Saltstack:
+        20:50:28 up  3:04,  1 user,  load average: 0.00, 0.00, 0.00
+        USER     TTY      FROM              LOGIN@   IDLE   JCPU   PCPU WHAT
+        root     pts/1    192.168.3.241    19:54   16:02   0.01s  0.01s -bash
+    salt -G env:test cmd.run 'hostname -f'
+    Client.Saltstack:
+        Client.Saltstack
+
+    salt -G mydomain:cf.com.cn cmd.run 'ping baidu.com -c 3'
+    Client.Saltstack:
+        PING baidu.com (180.149.132.47) 56(84) bytes of data.
+        64 bytes from 180.149.132.47: icmp_seq=1 ttl=51 time=5.48 ms
+        64 bytes from 180.149.132.47: icmp_seq=2 ttl=51 time=60.0 ms
+        64 bytes from 180.149.132.47: icmp_seq=3 ttl=51 time=5.99 ms
+
+        --- baidu.com ping statistics ---
+        3 packets transmitted, 3 received, 0% packet loss, time 11023ms
+        rtt min/avg/max/mdev = 5.483/23.830/60.009/25.583 ms

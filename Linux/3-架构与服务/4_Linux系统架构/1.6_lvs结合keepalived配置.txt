@@ -1,0 +1,155 @@
+1、为什么需要使用keepalived？
+	因为像之前的那种应用模式，如果一台real server宕机的话，那么就会有客户访问不到服务器资源，假如权重为1：1，那么就不一半的用户访问不到，为了避免这种问题的发生就出现了keepalived
+	keepalive是集HA和LB为一身的软件，本身具有心跳功能。
+
+2、准备工作、
+	a、网络环境
+		192.168.3.102: lvs_Director + keepalived_master
+		192.168.3.103: Rear Server 1
+		192.168.3.104: Rear Server 2
+		192.168.3.105: lvs_Director + keepalived_slave-back
+	b、配置文件
+#编辑主服务器keepalive的配置文件 
+vrrp_instance VI_1 {
+    state MASTER
+    interface eth0
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        192.168.3.200
+    }
+}
+
+virtual_server 192.168.3.200 80 {
+    delay_loop 6
+    lb_algo rr
+    lb_kind DR
+	 #(同一IP的连接0秒内被分配到同一台realserver)
+    persistence_timeout 0 #如果配置成其它的值，那么可能出现如果一台机器宕机后，在很短的时间内再恢复则不可能自动回切
+    protocol TCP
+
+    real_server 192.168.3.103 80 {
+        weight 100
+        TCP_GET {
+            connect_timeout 10 #(10秒无响应超时)
+            nb_get_retry 3
+            delay_before_retry 3
+			connect_port 80
+        }
+    }
+    real_server 192.168.3.104 80 {
+        weight 100
+        TCP_GET {
+            connect_timeout 10 #(10秒无响应超时)
+            nb_get_retry 3
+            delay_before_retry 3
+			connect_port 80
+        }
+    }
+}
+
+#编辑备用keepalive的配置文件 
+vrrp_instance VI_1 {
+    state BACKUP
+    interface eth0
+    virtual_router_id 51
+    priority 90
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+    virtual_ipaddress {
+        192.168.3.200
+    }
+}
+
+virtual_server 192.168.3.200 80 {
+    delay_loop 6
+    lb_algo rr
+    lb_kind DR
+    persistence_timeout 50
+    protocol TCP
+
+    real_server 192.168.3.103 80 {
+        weight 100
+        TCP_CHECK {
+            connect_timeout 3
+            nb_get_retry 3
+            delay_before_retry 3
+			connect_port 80
+        }
+    }
+    real_server 192.168.3.104 80 {
+        weight 100
+        TCP_CHECK {
+            connect_timeout 3
+            nb_get_retry 3
+            delay_before_retry 3
+			connect_port 80
+        }
+    }
+}
+	c、dr_script
+192.168.3.102->/usr/local/sbin/lvs_dr.sh
+#!/bin/bash
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+ipvsadm=/sbin/ipvsadm
+vip=192.168.3.200
+rs1=192.168.3.103
+rs2=192.168.3.104
+
+ifconfig eth0:0 down
+ifconfig eth0:0 $vip broadcast $vip netmask 255.255.255.255 up
+route add -host $vip dev eth0:0
+
+$ipvsadm -C
+$ipvsadm -A -t $vip:80 -s wrr
+$ipvsadm -a -t $vip:80 -r $rs1:80 -g -w 1
+$ipvsadm -a -t $vip:80 -r $rs2:80 -g -w 2
+
+192.168.3.103:->/usr/local/sbin/lvs_dr.sh 
+#!/bin/bash
+
+vip=192.168.3.200
+ifconfig lo:0 down
+ifconfig lo:0 $vip broadcast $vip netmask 255.255.255.255 up
+route add -host $vip lo:0
+
+echo "1" > /proc/sys/net/ipv4/conf/lo/arp_ignore 
+echo "2" > /proc/sys/net/ipv4/conf/lo/arp_announce 
+echo "1" > /proc/sys/net/ipv4/conf/all/arp_ignore 
+echo "2" > /proc/sys/net/ipv4/conf/all/arp_announce
+
+192.168.3.104:->/usr/local/sbin/lvs_dr.sh
+#!/bin/bash
+
+vip=192.168.3.200
+ifconfig lo:0 down
+ifconfig lo:0 $vip broadcast $vip netmask 255.255.255.255 up
+route add -host $vip lo:0
+
+echo "1" > /proc/sys/net/ipv4/conf/lo/arp_ignore 
+echo "2" > /proc/sys/net/ipv4/conf/lo/arp_announce 
+echo "1" > /proc/sys/net/ipv4/conf/all/arp_ignore 
+echo "2" > /proc/sys/net/ipv4/conf/all/arp_announce
+
+3、测试
+注意下面启动的顺序，先主后从
+192.168.3.102（主）：sh /usr/local/sbin/lvs_dr.sh ; /etc/init.d/keepalived start
+192.168.3.105（从）：sh /usr/local/sbin/lvs_dr.sh ; /etc/init.d/keepalived start
+192.168.3.104（RS）：sh /usr/local/sbin/lvs_dr.sh
+192.168.3.105（RS）：sh /usr/local/sbin/lvs_dr.sh
+
+使用浏览器访问：192.168.3.200:80,使用DR模式，所以需要使用虚拟ip。
+
+4、参考资料
+http://www.vimer.cn/2009/11/%E7%94%A8netstat%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E7%8A%B6%E6%80%81%E8%AF%A6%E8%A7%A3.html
+http://my.oschina.net/hncscwc/blog/158746

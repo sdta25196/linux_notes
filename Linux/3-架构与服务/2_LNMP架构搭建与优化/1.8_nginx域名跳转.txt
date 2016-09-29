@@ -1,0 +1,41 @@
+参考网址：
+	http://www.apelearn.com/bbs/thread-4840-1-1.html
+	http://blog.csdn.net/longyinyushi/article/details/50955097
+
+如何用nginx rewrite实现目录间的跳转，如从www.test.com/abc/123/cd/domain 跳转到 www.test.com/abc/123/cmd/domain？
+	rewrite /abc/123/cd/domain /abc/123/cmd/domain last;
+
+
+########################## CONFIG START ####################################
+server
+{
+    listen 80;
+    server_name www.cf.com www.tlm.org www.zw.com;
+    #配置重定向
+    if ($host != 'iwww.cf.com')
+    {
+        rewrite ^/(.*)$ http://www.cf.com/$1 permanent;
+    }
+    index index.html index.htm index.php;
+    root /data/www/;
+    
+    #nginx用户认证
+    location ~ .*admin\.php$ {
+        auth_basic "nginx authentification web page";
+        auth_basic_user_file /usr/local/nginx/conf/.htppasswd;
+        include fastcgi_params;
+        fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+
+    location ~ \.php$ {
+    include fastcgi_params;
+#fastcgi_pass 127.0.0.1:9000;
+    fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+}
+########################## CONFIG ENDS  ####################################
+

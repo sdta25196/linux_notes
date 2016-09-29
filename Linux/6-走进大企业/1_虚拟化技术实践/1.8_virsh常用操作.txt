@@ -1,0 +1,145 @@
+1. 列出正在运行的虚拟机
+virsh list
+
+2. 列出所有的虚拟机
+virsh list -all
+
+3. 登录到虚拟机
+    a、ssh -l user_name ip_addr
+    b、virsh console virtual_machine_name
+
+如下：
+[root@kvm ~]# virsh list --all
+Id    Name                           State
+----------------------------------------------------
+13    vm_4                           running
+-     centos                         shut off
+-     centos1                        shut off
+-     centos6.7-i386                 shut off
+-     changfeng                      shut off
+-     changfeng1                     shut off
+-     changfeng2                     shut off
+-     vm_1                           shut off
+-     vm_2                           shut off
+-     vm_3                           shut off
+
+[root@kvm ~]# virsh console vm_4
+Connected to domain vm_4
+Escape character is ^]
+
+[root@localhost ~]# 
+
+4. 关闭虚拟机
+# 这个命令并不能真正的关机，需要安装yum install -y acpid，而且还需要开户acpid服务/etc/init.d/acpid start
+virsh shutdown vm_4 
+
+# virsh destroy vm_4也可以把vm_4给关闭掉，并不是真正的删除vm_4虚拟机，只不过是从virsh　list中把它移除，这种方法适用于没有网络的情况下，当然也可以先通过console登录到虚拟机后再执行poweroff或者是shutdown命令。
+# 经过测试，这个destroy并没有关机的打印信息。
+[root@kvm ~]# virsh destroy vm_4
+Domain vm_4 destroyed
+
+5. 打开一个虚拟机
+# 打开一个虚拟机
+virsh start changfeng2
+# 打开虚拟机，并通过串口ttyso连接到虚拟机，此时可以看见启动信息
+virsh start changfeng2  --console
+
+6. 挂起一台虚拟机
+virsh suspend vm_4
+[root@kvm ~]# virsh suspend vm_4
+Domain vm_4 suspended
+
+[root@kvm ~]# virsh list
+ Id    Name                           State
+ ----------------------------------------------------
+  16    vm_4                           paused
+  17    changfeng2                     running
+
+7. 恢复一台机器
+virsh resume vm_4
+
+[root@kvm ~]# virsh resume vm_4
+Domain vm_4 resumed
+[root@kvm ~]# virsh list 
+ Id    Name                           State
+ ----------------------------------------------------
+  16    vm_4                           running
+  17    changfeng2                     running
+
+8. 让虚拟机随系统启动时自动开启
+virsh autostart vm_4
+
+[root@kvm ~]# virsh autostart vm_4
+Domain vm_4 marked as autostarted
+
+9. 取消虚拟机随宿主机开机自动开启
+[root@kvm ~]# virsh autostart changfeng2
+Domain changfeng2 marked as autostarted
+
+[root@kvm ~]# virsh autostart --disable changfeng2
+Domain changfeng2 unmarked as autostarted
+
+[root@kvm ~]# virsh autostart --disable vm_4
+Domain vm_4 unmarked as autostarted
+
+10. 将虚拟机彻底的删除
+# 运行这条命令后，virsh　list　--all看不到取消标记的虚拟机了，需要手动把镜像文件删除
+virsh undefine virtual_machine_name
+
+[root@kvm ~]# virsh list --all
+ Id    Name                           State
+ ----------------------------------------------------
+  16    vm_4                           running
+  17    changfeng2                     running
+  -     centos                         shut off
+  -     centos1                        shut off
+  -     centos6.7-i386                 shut off
+  -     changfeng                      shut off
+  -     changfeng1                     shut off
+  -     vm_1                           shut off
+  -     vm_2                           shut off
+  -     vm_3                           shut off
+
+[root@kvm ~]# virsh undefine centos
+Domain centos has been undefined
+
+[root@kvm ~]# virsh undefine centos1
+Domain centos1 has been undefined
+
+[root@kvm ~]# virsh undefine changfeng1
+Domain changfeng1 has been undefined
+
+[root@kvm ~]# virsh undefine changfeng
+Domain changfeng has been undefined
+
+[root@kvm ~]# virsh undefine vm_1
+Domain vm_1 has been undefined
+
+[root@kvm ~]# virsh undefine vm_2
+Domain vm_2 has been undefined
+
+[root@kvm ~]# virsh undefine vm_3
+Domain vm_3 has been undefined
+
+[root@kvm ~]# virsh undefine centos6.7-i386
+Domain centos6.7-i386 has been undefined
+
+[root@kvm ~]# virsh list --all
+Id    Name                           State
+----------------------------------------------------
+16    vm_4                           running
+17    changfeng2                     running
+
+11. 查看虚拟机磁盘
+[root@localhost ~]# virsh domblklist vm_1
+Target     Source
+------------------------------------------------
+vda        /kvm/vm_1.qcow2
+vdb        /kvm/vm_1_new.qcow2
+
+12. 查看虚拟机网卡列表
+[root@localhost ~]# virsh domiflist vm_1
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br0        virtio      52:54:00:b5:ce:21
+vnet1      bridge     br0        -           52:54:00:9f:ab:86

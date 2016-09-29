@@ -1,0 +1,38 @@
+1. 编写简单的yml格式的文件，在/etc/ansible目录下编写
+---
+- hosts: testhost
+  remote_user: root
+    tasks:
+      - name: test_playbook
+        shell: touch /tmp/am.txttxt
+说明：hosts指定了对那些主机进行操作
+    remote_user使用什么用户登录远程进行操作
+    tasks指定了一个任务，name参数是对任务的描述，在执行的过程中会被打印出来。
+
+2. 使用ansible-playbook来执行指定的文件
+ansible-playbook test.yml
+
+3. 再编写一个创建用户的例子，这里的名字并不是以yml为后缀的，说明只要格式是yml的就没有问题
+# cat create_user.yml_
+---
+- name: create_user
+  hosts: testhost
+  user: root
+  gather_facts: false
+  vars:
+    - user: "test"
+  tasks:
+    - name: create user
+      user: name="{{ user }}"
+
+# ansible-playbook create_user.yml_
+
+      PLAY [create_user] *************************************************************
+
+      TASK [create user] *************************************************************
+      ok: [192.168.3.175]
+      ok: [127.0.0.1]
+
+      PLAY RECAP *********************************************************************
+      127.0.0.1                  : ok=1    changed=0    unreachable=0    failed=0   
+      192.168.3.175              : ok=1    changed=0    unreachable=0    failed=0  

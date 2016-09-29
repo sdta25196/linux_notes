@@ -1,0 +1,17 @@
+#! /usr/bin/expect
+# usage: this script can accept args, and execute rsync command e.g. 
+# date: 2016-04-06 20:55
+# author: ChangFeng.ch
+
+set user [lindex $argv 0]
+set host [lindex $argv 1]
+set passwd "lyys"
+
+spawn rsync -av $user@$host:/etc/passwd /tmp/
+
+expect {
+    "yes/no:" { send "yes\r" }
+    "password:" { send "$passwd\r" }
+}
+
+expect eof

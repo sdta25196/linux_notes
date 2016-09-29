@@ -1,0 +1,100 @@
+什么是nrpe： Nagios Remote Plugin Executor
+
+使用nrpe的插件探测被监控的设备的信息，以下第一步在主控端操作，也就是监控端
+1. 编辑监控端的配置文件，在文件最后追加下面的内容
+vi /etc/nagios/objects/commands.cfg
+define command{
+    command_name
+    command_line
+    check_nrpe
+    $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+}
+
+#继续编辑监控端（服务端）配置文件，只需要追加一些内容，使用nrpe获取主机信息
+vi /etc/nagios/conf.d/192.168.3.173.cfg
+define host{
+        use                         linux-server            ; Name of host template to use
+        ; This host definition will inherit all variables that are defined
+        ; in (or inherited by) the linux-server host template definition.
+        host_name                   192.168.3.173
+        alias                       3.173
+        address                     192.168.3.173
+}
+
+define service{
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_ping
+        check_command               check_ping!100.0,20%!200.0,50%
+        max_check_attempts5
+        normal_check_interval       1
+}
+
+define service{
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_ssh
+        check_command               check_ssh
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+define service{
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_http
+        check_command               check_http
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+define service {
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_load
+        check_command               check_nrpe!check_load
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+define service {
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_disk_hda1
+        check_command               check_nrpe!check_hda1
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+define service {
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_loadcheck_disk_hda2
+        check_command               check_nrpe!check_hda2
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+define service {
+        use                         generic-service
+        host_name                   192.168.3.173
+        service_description         check_loadcheck_disk_hda2
+        check_command               check_nrpe!check_hda2
+        max_check_attempts          5
+        normal_check_interval       1
+}
+
+
+2. 被监控端的配置，主要就是替换一部分参数，搜索check_load，找到hda1这行，修改后面的磁盘位置为真机上具体的磁盘，这个check_load语法是服务器端/etc/nagios/conf.d/192.168.3.173.cfg中定义的命令
+    自定义的脚本一般都写在这个配置文件中: /etc/nagios/nrpe.cfg
+command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
+command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
+command[check_hda1]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /dev/sda1
+command[check_hda2]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /dev/sda2
+command[check_hda3]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /dev/sda3
+command[check_zombie_procs]=/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
+command[check_total_procs]=/usr/lib/nagios/plugins/check_procs -w 150 -c 200
+vim /etc/nagios/nrpe.cfg
+
+3. 查看相关的日志
+    /var/log/nagios

@@ -1,0 +1,11 @@
+#如果采用ssh隧道的方式来连接，但是ssh没有用默认的22端口，如果要指定端口则需要使用下面的命令，-e ’ssh -p 2234’
+rsync -avPz -e ’ssh -p 2234’ source destination
+
+#如何在使用rsync时，不使用密码，若采用ssh的方式，则可以设备密钥登录，密钥不要设备密码，如果我的宿主机和虚拟机传输，则可以通过下面的命令来实现
+cn@cn-Alienware-15:~$ rsync -avzP root@192.168.3.100:/root/iptables_rule.sh .
+receiving incremental file list
+iptables_rule.sh
+    291 100%  284.18kB/s    0:00:00 (xfr#1, to-chk=0/1)
+
+sent 30 bytes  received 221 bytes  502.00 bytes/sec
+total size is 291  speedup is 1.16

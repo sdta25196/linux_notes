@@ -1,0 +1,28 @@
+有时候可以通过修改本地计算机的hosts文件，实现不同的域名指向到你的服务器地址，这样显然不太合适，所以我们要对这些“非法”的访问做下限制，即修改默认的虚拟主机
+
+先给它指向一个没有访问权限的目录，指定一个域名，如果不是这个域名，则匹配第二个虚拟主机的配置，如果都没有匹配到，则就拒绝客户端访问，当然直接第一个域名给的unrachable.com也行，只不过没有权限罢了。
+
+逐次匹配，匹配不到，就去按照第一个虚拟主机（默认）去解析。
+
+<VirtualHost *:80>
+   DocumentRoot "/tmp/unrachable"
+   ServerName unrachable.com
+</VirtualHost>
+
+
+<VirtualHost *:80>
+   ServerAdmin justnet@gmail.com
+   DocumentRoot "/data/www/"
+   ServerName www.cf.cc
+   ServerAlias www.3201.cc
+   #ErrorLog "logs/dummy-host.example.com-error_log"
+   #CustomLog "logs/dummy-host.example.com-access_log" common
+   <Directory /data/www/admin>
+       AllowOverride AuthConfig
+       AuthName "Please input the correct username and password. Thank you!"
+       AuthType Basic
+       AuthUserFile /data/.htpasswd
+       require valid-user
+   </Directory>
+</VirtualHost>
+

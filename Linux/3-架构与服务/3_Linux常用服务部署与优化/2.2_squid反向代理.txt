@@ -1,0 +1,69 @@
+1、编辑主配置文件，去掉默认的80端口
+    http_port 80 accel vhost vport
+    cache_peer 61.135.169.125 parent 80 0 originserver name=a
+    cache_peer_domain a www.baidu.com
+    cache_peer 61.135.169.125 parent 80 0 originserver name=b
+    cache_peer_domain b a.shifeng.com
+
+补充：查看一个网站的真实ip
+[root@SLAVE ~]# host www.baidu.com
+www.baidu.com is an alias for www.a.shifen.com.
+www.a.shifen.com has address 61.135.169.125
+www.a.shifen.com has address 61.135.169.121
+[root@SLAVE ~]# host qq.com
+qq.com has address 61.135.157.156
+qq.com has address 125.39.240.113
+qq.com mail is handled by 20 mx2.qq.com.
+qq.com mail is handled by 10 mx3.qq.com.
+qq.com mail is handled by 30 mx1.qq.com.
+
+        
+2、重启服务
+    squid -kcheck
+    squid -reconfig
+
+3、测试
+[root@SLAVE ~]# curl -x192.168.3.173:80 www.baidu.com -I
+HTTP/1.0 200 OK
+Date: Fri, 25 Mar 2016 07:47:10 GMT
+Content-Type: text/html; charset=utf-8
+Vary: Accept-Encoding
+Set-Cookie: BAIDUID=BDE851D957F877DCDB9143B161368C8B:FG=1; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BIDUPSID=BDE851D957F877DCDB9143B161368C8B; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: PSTM=1458892030; expires=Thu, 31-Dec-37 23:55:55 GMT; max-age=2147483647; path=/; domain=.baidu.com
+Set-Cookie: BDSVRTM=0; path=/
+Set-Cookie: BD_HOME=0; path=/
+Set-Cookie: H_PS_PSSID=1448_19033_17001_15728_12232; path=/; domain=.baidu.com
+P3P: CP=" OTI DSP COR IVA OUR IND COM "
+Cache-Control: private
+Cxy_all: baidu+421397b25e853d9094abc72729ef977a
+Expires: Fri, 25 Mar 2016 07:46:24 GMT
+X-Powered-By: HPHP
+Server: BWS/1.1
+X-UA-Compatible: IE=Edge,chrome=1
+BDPAGETYPE: 1
+BDQID: 0xb79421750001c7fa
+BDUSERID: 0
+X-Cache: MISS from aminglinux.com
+X-Cache-Lookup: MISS from aminglinux.com:80
+Via: 1.0 aminglinux.com (squid/3.1.23)
+Connection: keep-alive
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

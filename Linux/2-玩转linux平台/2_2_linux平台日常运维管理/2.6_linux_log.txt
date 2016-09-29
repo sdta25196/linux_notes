@@ -1,0 +1,18 @@
+1. /var/log/messages
+2. lastb #无效的登录信息 /var/log/btmp
+    Lastb is the same as last, except that by default it shows a log of the file /var/log/btmp, which contains all the bad login attempts.
+
+3. last - show listing of last logged in users, /var/log/wtmp
+    Last  searches  back through the file /var/log/wtmp (or the file desig- nated by the -f flag) and displays a list of all users logged  in  (and out)  since  that  file  was  created.  Names of users and tty’s can be given, in which case last will show only  those  entries  matching  the arguments.   Names  of ttys can be abbreviated, thus last 0 is the same as last tty0.
+
+4. /var/log/secure 和验证相关，判断有没有被暴力破解root密码
+
+5. /var/log/dmesg 记录硬件、内核等相关日志
+    dmesg查看到的消息是实时的，而上面的文件仅仅记录的是开机时的相关信息
+
+6. /var/log/maillog #和邮件相关
+
+7. 启动日志服务
+    service rsyslog status
+    service rsyslog restart
+    /etc/init.d/rsyslog restart

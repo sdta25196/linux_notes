@@ -1,0 +1,177 @@
+OPTIONS SUMMARY
+Here is a short summary of the options available in rsync. Please refer
+to the detailed description below for a complete description.
+
+-v, --verbose               increase verbosity
+-q, --quiet                 suppress non-error messages
+--no-motd               suppress daemon-mode MOTD (see caveat)
+-c, --checksum              skip based on checksum, not mod-time & size
+-a, --archive               archive mode; equals -rlptgoD (no -H,-A,-X)
+--no-OPTION             turn off an implied OPTION (e.g. --no-D)
+-r, --recursive             recurse into directories
+-R, --relative              use relative path names
+--no-implied-dirs       don’t send implied dirs with --relative
+-b, --backup                make backups (see --suffix & --backup-dir)
+--backup-dir=DIR        make backups into hierarchy based in DIR
+--suffix=SUFFIX         backup suffix (default ~ w/o --backup-dir)
+-u, --update                skip files that are newer on the receiver
+--inplace               update destination files in-place
+--append                append data onto shorter files
+--append-verify         --append w/old data in file checksum
+-d, --dirs                  transfer directories without recursing
+-l, --links                 copy symlinks as symlinks
+-L, --copy-links            transform symlink into referent file/dir
+--copy-unsafe-links     only "unsafe" symlinks are transformed
+--safe-links            ignore symlinks that point outside the tree
+-k, --copy-dirlinks         transform symlink to dir into referent dir
+-K, --keep-dirlinks         treat symlinked dir on receiver as dir
+-H, --hard-links            preserve hard links
+-p, --perms                 preserve permissions
+-E, --executability         preserve executability
+    --chmod=CHMOD           affect file and/or directory permissions
+-A, --acls                  preserve ACLs (implies -p)
+-X, --xattrs                preserve extended attributes
+-o, --owner                 preserve owner (super-user only)
+-g, --group                 preserve group
+--devices               preserve device files (super-user only)
+--specials              preserve special files
+-D                          same as --devices --specials
+-t, --times                 preserve modification times
+-O, --omit-dir-times        omit directories from --times
+--super                 receiver attempts super-user activities
+--fake-super            store/recover privileged attrs using xattrs
+-S, --sparse                handle sparse files efficiently
+-n, --dry-run               perform a trial run with no changes made
+-W, --whole-file            copy files whole (w/o delta-xfer algorithm)
+-x, --one-file-system       don’t cross filesystem boundaries
+-B, --block-size=SIZE       force a fixed checksum block-size
+-e, --rsh=COMMAND           specify the remote shell to use
+
+################### 注意下面同步目录的时候有没有/的区别
+[root@server ~]# rsync -avlPu Documents /tmp/Doc/
+[root@server ~]# tree /tmp/Doc/
+/tmp/Doc/
+└── Documents
+├── 1.txt.bak
+└── aa
+└── bb
+├── cc
+│   ├── dd
+│   ├── messages
+│   ├── messages-20160106
+│   ├── messages-20160106.1
+│   ├── messages-20160106.bak
+│   ├── messages-20160106.bak1
+│   ├── messages-20160106.bak2
+│   ├── messages-20160106.bak3
+│   ├── messages-20160116
+│   ├── messages-20160116.1
+│   ├── messages-20160117
+│   ├── messages-20160117.1
+│   └── messages-20160307
+└── ifconfig.info
+
+5 directories, 14 files
+[root@server ~]# tree Documents
+Documents
+├── 1.txt.bak
+└── aa
+└── bb
+├── cc
+│   ├── dd
+│   ├── messages
+│   ├── messages-20160106
+│   ├── messages-20160106.1
+│   ├── messages-20160106.bak
+│   ├── messages-20160106.bak1
+│   ├── messages-20160106.bak2
+│   ├── messages-20160106.bak3
+│   ├── messages-20160116
+│   ├── messages-20160116.1
+│   ├── messages-20160117
+│   ├── messages-20160117.1
+│   └── messages-20160307
+└── ifconfig.info
+
+4 directories, 14 files
+[root@server ~]# rsync -avlPu Documents/ /tmp/Doc/
+[root@server ~]# tree /tmp/Doc/
+/tmp/Doc/
+├── 1.txt.bak
+└── aa
+└── bb
+├── cc
+│   ├── dd
+│   ├── messages
+│   ├── messages-20160106
+│   ├── messages-20160106.1
+│   ├── messages-20160106.bak
+│   ├── messages-20160106.bak1
+│   ├── messages-20160106.bak2
+│   ├── messages-20160106.bak3
+│   ├── messages-20160116
+│   ├── messages-20160116.1
+│   ├── messages-20160117
+│   ├── messages-20160117.1
+│   └── messages-20160307
+└── ifconfig.info
+
+4 directories, 14 files
+[root@server ~]# tree Documents
+Documents
+├── 1.txt.bak
+└── aa
+└── bb
+├── cc
+│   ├── dd
+│   ├── messages
+│   ├── messages-20160106
+│   ├── messages-20160106.1
+│   ├── messages-20160106.bak
+│   ├── messages-20160106.bak1
+│   ├── messages-20160106.bak2
+│   ├── messages-20160106.bak3
+│   ├── messages-20160116
+│   ├── messages-20160116.1
+│   ├── messages-20160117
+│   ├── messages-20160117.1
+│   └── messages-20160307
+└── ifconfig.info
+
+4 directories, 14 files
+[root@server ~]# 
+
+-------------------------------------------------------------------------------------------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#### TEST --DELETE OPTIONS -- ####
+#### --delete  delete extraneous files for dest dirs.
+[root@server misc]# rm xa
+xaa  xab  xac  xad  xae  xaf  
+[root@server misc]# rm xa* -f
+[root@server misc]# rsync -avzP --delete ../misc/
+anaconda-ks.cfg.split.aa  anaconda-ks.cfg.split.ad  grub/
+anaconda-ks.cfg.split.ab  anaconda-ks.cfg.split.ae  
+anaconda-ks.cfg.split.ac  anaconda-ks.cfg.split.af  
+[root@server misc]# rsync -avzP --delete ../misc/ cn@192.168.3.17:/tmp/misc/
+cn@192.168.3.17's password: 
+sending incremental file list
+deleting xaf
+deleting xae
+deleting xad
+deleting xac
+deleting xab
+deleting xaa
+./
+
+sent 629 bytes  received 16 bytes  117.27 bytes/sec
+total size is 268326  speedup is 416.01
+[root@server misc]# tree ../misc/ | wc -l 
+32
+[root@server misc]# 
+
+#Destination Machine
+cn@cn-Alienware-15:~$ tree /tmp/misc/ | wc -l 
+32
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,99 @@
+1、代理配置文件
+vi /usr/local/nginx/conf/vhosts/proxy.conf
+server
+{
+    listen 80;
+    server_name www.baidu.com;
+
+    location /
+    {
+        proxy_pass http://61.135.169.121/;
+        #proxy_set_header Host $host;
+    }   
+}
+
+2、安装dig命令
+yum install bind* -y
+
+3、多个ip代理，实现负载均衡
+upstream
+{
+    server 61.135.169.125:80;
+    server 61.135.169.121:80;
+}
+
+server
+{
+    listen 80;
+    server_name www.baidu.com;
+
+    location /
+    {
+        proxy_pass http://changfeng/;
+	proxy_set_header Host $host;
+	＃经过测试下面这行可加可不加		
+	proxy_set_header X-Real-IP $remote_addr;
+    }  
+}
+
+###############################################
+2.5 nginx代理详解
+# vim /usr/local/nginx/conf/vhosts/proxy.conf 
+加入如下内容： 
+server 
+{ 
+	listen 80; 
+	server_name aaa.com; 
+
+	location / 
+	{ 
+		proxy_pass http://2.2.2.2/; 
+		proxy_set_header Host $host; 
+		proxy_set_header X-Real-IP $remote_addr; 
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
+	} 
+
+	#access_log /home/logs/aaa_access.log combined; 
+}
+
+说明：proxy_pass后面跟要代理机器的ip。如果后端的机器有多台，还可以用upstream来实现负载均衡，该部分知识点以后再详细介绍，配置如下：
+
+upstream bbb 
+{ 
+	server 1.2.3.1:80; 
+	server 1.2.3.4:80; 
+} 
+
+server 
+{ 
+	listen 80; 
+	server_name bbb.com; 
+
+	location / { 
+		proxy_pass http://bbb/; 
+		proxy_set_header Host $host; 
+		proxy_set_header X-Real-IP $remote_addr; 
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
+	} 
+# access_log /home/logs/bb_access.log combined; 
+} 
+
+说明：upstream后面的名字是自定义的，这个名字会放到proxy_pass后面。 我们还可以代理一个服务器上所有域名，首先在vhosts目录下需要建立两个文件，一个是servername 列表文件，一个是虚拟主机配置文件。两个文件内容分别为 
+	（1） servername # vim /usr/local/nginx/conf/vhosts/servername 加入如下内容：
+		server_name www.123.net.cn www.alsdjfl.com www.asdfa1.com;
+		就这么简单一行，当然这个server_name 还可以继续添加的 
+	（2） 虚拟主机配置文件 # vim /usr/local/nginx/conf/vhosts/proxy_all.conf 内容如下： 
+server { 
+	listen 80; 
+	include vhosts/servername; 
+	# 这里的文件就是上边那个servername列表文件 
+
+	location / { 
+		proxy_pass http://1.2.1.2/; 
+		# 这里就是需要做代理的服务器ip地址了 
+		proxy_set_header Host $host; 
+		proxy_set_header X-Real-IP $remote_addr; 
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; 
+	} 
+	access_log /dev/null; 
+}

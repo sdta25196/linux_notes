@@ -1,0 +1,9 @@
+# cp.get_file // 复制1.sh到客户端的/tmp目录下，并且重命名为123.txt
+    salt 'Client.Saltstack' cp.get_file salt://test/1.sh /tmp/123.txt
+
+# cp.get_dir //拷贝一个目录, /tmp/后面不要加上test，不然最终客户端上生成的目录结构为/tmp/test/test/*
+    salt 'Client.Saltstack' cp.get_dir salt://test/ /tmp/
+
+# salt-run manage.up //显示存活的client
+
+# salt '*' cmd.script salt://test/1.sh //执行master上的shell脚本

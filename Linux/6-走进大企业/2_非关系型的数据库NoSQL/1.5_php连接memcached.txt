@@ -1,0 +1,74 @@
+1. 下载memcached，解压、安装
+http://pecl.php.net/package/memcache
+
+cd /usr/local/src/
+wget http://www.lishiming.net/data/attachment/forum/memcache-2.2.3.tgz
+tar zxf memcache-2.2.3.tgz 
+cd memcache-2.2.3
+/usr/local/php/bin/phpize 
+./configure --with-php-config=/usr/local/php/bin/php-config 
+echo $?
+make 
+echo $?
+make install
+ls /usr/local/php/lib/php/extensions/no-debug-non-zts-20121212/
+memcache.so  opcache.a  opcache.so
+
+2. 在php.ini中添加memcached模块
+修改/usr/local/php/etc/php.ini ，把extension_dir = "./"
+修改为
+extension_dir = "/usr/local/servers/php5/lib/php/extensions/no-debug-non-zts-20060922/"
+并添加一行
+extension="memcache.so"
+
+3. 检验
+# /usr/local/php/bin/php -m | grep memcach
+memcache
+
+4. 测试php脚本,vim test.php
+<?php
+//连接Memcache Memcache
+$mem = new Memcache;
+$mem->connect("localhost", 11211);
+//保存数据
+$mem->set('key1', 'This is first value', 0, 60);
+$val = $mem->get('key1');
+echo "Get key1 value: " . $val ."<br>";
+//替换数据
+$mem->replace('key1', 'This is replace value', 0, 60);
+$val = $mem->get('key1');
+echo "Get key1 value: " . $val . "<br>";
+//保存数组数据
+$arr = array('aaa', 'bbb', 'ccc', 'ddd');
+$mem->set('key2', $arr, 0, 60);
+$val2 = $mem->get('key2');
+echo "Get key2 value: ";
+print_r($val2);
+echo "<br>";
+//删除数据
+$mem->delete('key1');
+$val = $mem->get('key1');
+echo "Get key1 value: " . $val . "<br>";
+//清除所有数据
+$mem->flush();
+$val2 = $mem->get('key2');
+echo "Get key2 value: ";
+print_r($val2);
+echo "<br>";
+//关闭连接
+$mem->close();
+?>
+
+/usr/local/php/bin/php test.php
+Get key1 value: <br>Get key1 value: <br>Get key2 value: Array
+(
+     [0] => aaa
+     [1] => bbb
+     [2] => ccc
+     [3] => ddd
+)
+<br>Get key1 value: <br>Get key2 value: <br>
+
+扩展学习
+maget搭建memcached集群  http://blog.snsgou.com/post-800.html
+memcached get all keys方法  http://www.aikaiyuan.com/6433.html

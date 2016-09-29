@@ -1,0 +1,11 @@
+1. 安装tree，名字和通过yum list查看到的要一致，还可以加上state=installed
+# ansible testhost -m yum -a "name=tree"
+
+2. 和服务相关的操作
+# ansible testhost -m service -a "name=httpd state=started enabled=yes"
+
+3. ansible文档的使用
+a、ansible列出所有的模块
+# ansible testhost -m service -a "name=httpd state=started enabled=yes"
+b、查看指定模块的文档
+# ansible-doc cron

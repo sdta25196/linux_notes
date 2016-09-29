@@ -1,0 +1,24 @@
+and  左边的执行成功后，才会执行右边的，左边的执行不成功后就不会执行后面的了。
+or  左边的为真就不会再执行右边的命令了，除非左边的执行不成功
+
+[root@server ~]# touch 1.txt
+[root@server ~]# touch 2.txt
+[root@server ~]# ls 1.txt || ls 3.txt
+1.txt
+[root@server ~]# ls 3.txt || ls 1.txt 
+ls: cannot access 3.txt: No such file or directory
+1.txt
+[root@server ~]# ls 3.txt && ls 1.txt 
+ls: cannot access 3.txt: No such file or directory
+[root@server ~]# ls 1.txt && ls 3.txt
+1.txt
+ls: cannot access 3.txt: No such file or directory
+[root@server ~]# ls 1.txt || ls 3.txt
+1.txt
+[root@server ~]# ls 1.txt || adfadfafasf
+1.txt
+[root@server ~]# ls 3.txt && ls 1.txt 
+ls: cannot access 3.txt: No such file or directory
+[root@server ~]# ls 3.txt && aaaaaaaaaaaaaaaaaaaaaaaaaaa
+ls: cannot access 3.txt: No such file or directory
+; 不论左边的命令执行成功与否，都会执行右边的命令。

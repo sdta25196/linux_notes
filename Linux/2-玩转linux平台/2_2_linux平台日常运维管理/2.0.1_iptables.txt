@@ -1,0 +1,13 @@
+1. netfilter --> iptables
+2. table --> chain --> rules (netfilter的层次结构)
+3. filter nat mangle raw(netfilter默认的几张表)
+4. iptables -t filter -nvL #查看一个表中的内容
+
+REJECT and DROP
+REJECT: 先查看数据包，然后丢掉
+DROP: 不查看，直接丢掉，更流氓一点
+Create Rulest
+iptables -t filter -I INPUT -p tcp --dport 80 -s 127.1.1.1 -j DROP #添加一条规则
+iptables -t filter -A INPUT -p tcp --dport 80 -s 127.1.1.1 -j DROP #追加一条规则，和上面的区别就是，如果两条规则一样，则-I的优先生效。
+iptables -t filter -D INPUT -p tcp --dport 80 -s 127.1.1.1 -j DROP #删除一条规则
+iptables -t filter -I INPUT -p icmp  -j DROP #通过netfilter防止别人ping你的主机

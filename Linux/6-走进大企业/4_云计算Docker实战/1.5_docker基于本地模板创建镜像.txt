@@ -1,0 +1,19 @@
+1. 模块获取，可以从下面的网站得，本次实验以centos-5-x86.tar.gz为例
+    http://openvz.org/Download/templates/precreated
+    http://download.openvz.org/template/precreated/centos-5-x86.tar.gz 
+
+2. 将模块镜像导入到本地
+    # cat centos-6-x86-minimal.tar.gz | docker import - centos6-x86
+    # docker images
+    REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL S
+    centos6-x86         latest              89757b4f2f10        13 seconds ago      323.9 MB
+
+3. 把已有镜像导出为一个文件
+    docker save -o centos_exp.tar centos
+
+4. 用已有的镜像恢复为本地镜像
+    docker load --input centos_exp.tar
+    docker load < centos_exp.tar
+    
+5. 上传自己的镜像到dockerhub官网上，需要提前注册一个账号
+    docker push images_name

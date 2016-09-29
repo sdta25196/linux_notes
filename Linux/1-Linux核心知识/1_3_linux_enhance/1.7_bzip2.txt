@@ -1,0 +1,18 @@
+1、bzip的默认压缩级别是9，参考man page中的，如下：
+2、bzip -c file > std.bz2 # This command won't delete source file , It will be print stdout when compressing a file.
+NAME
+  bzip2, bunzip2 - a block-sorting file compressor, v1.0.4
+  bzcat - decompresses files to stdout
+  bzip2recover - recovers data from damaged bzip2 files
+
+SYNOPSIS
+ bzip2 [ -cdfkqstvzVL123456789 ] [ filenames ...  ]
+ bunzip2 [ -fkvsVL ] [ filenames ...  ]
+ bzcat [ -s ] [ filenames ...  ]
+ bzip2recover filename
+OPTIONS
+	-1 (or --fast) to -9 (or --best)
+	Set the block size to 100 k, 200 k ..  900 k when compressing.  Has no effect  when  decompress
+    ing.See  MEMORY  MANAGEMENT  below.  The --fast and --best aliases are primarily for GNU gzip
+    compatibility.  In particular, --fast doesn't make  things  significantly  faster.   And  --best
+	merely selects the default behaviour.'

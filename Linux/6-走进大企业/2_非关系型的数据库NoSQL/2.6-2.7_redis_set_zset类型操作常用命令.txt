@@ -1,0 +1,342 @@
+//set常用操作命令
+sadd seta aaa  //向集合seta中放入元素
+smembers seta   //查看集合中的所有元素 
+srem  seta    aaa //删除元素 
+spop  seta    //随机取出一个元素，删除
+sdiff  seta  setb   //求差集，以seta为标准
+sdiffstore setc seta setb   //求差集并且存储，存储到了setc里 
+sinter seta setb    //求交集
+sinterstore  setd seta setb  //将交集存储setd 
+sunion seta setb  //求并集
+sunionstore sete seta setb   //求并集并存储到sete
+sismember seta aaa  //判断一个元素是否属于一个集合, 1表示真，0表示假
+srandmember  seta  //随机取出一个元素，但不删除
+
+## 操作示例
+### 添加、删除元素
+127.0.0.1:6379> SADD sta aa
+(integer) 1
+127.0.0.1:6379> SMEMBERS sta 
+1) "aa"
+127.0.0.1:6379> SREM sta aa
+(integer) 1
+127.0.0.1:6379> SMEMBERS sta
+(empty list or set)
+127.0.0.1:6379> SADD sta a
+(integer) 1
+127.0.0.1:6379> SADD sta b
+(integer) 1
+127.0.0.1:6379> SADD sta c
+(integer) 1
+127.0.0.1:6379> SMEMBERS sta
+1) "c"
+2) "b"
+3) "a"
+127.0.0.1:6379> SPOP sta
+"a"
+127.0.0.1:6379> SPOP sta
+"c"
+127.0.0.1:6379> SMEMBERS sta
+1) "b"
+127.0.0.1:6379> SREM sta b
+(integer) 1
+127.0.0.1:6379> SMEMBERS sta
+(empty list or set)
+127.0.0.1:6379>
+
+### 使用sdiff查看两个集合的差集
+### sdiffstore 把结果存放到一个新的集合中
+127.0.0.1:6379> SMEMBERS sta
+1) "1"
+2) "2"
+3) "3"
+4) "4"
+5) "5"
+127.0.0.1:6379> SMEMBERS stb
+1) "2"
+2) "3"
+3) "5"
+4) "6"
+5) "7"
+127.0.0.1:6379> SDIFF sta stb
+1) "1"
+2) "4"
+127.0.0.1:6379> SDIFF stb sta
+1) "6"
+2) "7"
+127.0.0.1:6379> SDIFFSTORE stc stb sta
+(integer) 2
+127.0.0.1:6379> SMEMBERS stc
+1) "6"
+2) "7"
+## 求交集，并把结果存入在新的集合中
+### 需要注意的是，如果要将结果存入在一个已有元素的集合中，那么就会把原来的元素给覆盖掉(这个结果同样出现在sdiffstore中)
+127.0.0.1:6379> SINTER sta stb
+1) "2"
+2) "3"
+3) "5"
+127.0.0.1:6379> SMEMBERS stc
+1) "6"
+2) "7"
+127.0.0.1:6379> SINTERSTORE stc_1 sta stb
+(integer) 3
+127.0.0.1:6379> SINTERSTORE stc sta stb
+(integer) 3
+127.0.0.1:6379> SMEMBERS stc
+1) "2"
+2) "3"
+3) "5"
+127.0.0.1:6379> SMEMBERS stc_1
+1) "2"
+2) "3"
+3) "5"
+127.0.0.1:6379> SMEMBERS temp
+1) "d"
+2) "c"
+3) "b"
+4) "a"
+5) "e"
+127.0.0.1:6379> SDIFFSTORE temp sta stb
+(integer) 2
+127.0.0.1:6379> SMEMBERS temp
+1) "1"
+2) "4"
+
+## 求并集，并存入到一个新的集合中
+127.0.0.1:6379> SMEMBERS sta
+1) "1"
+2) "2"
+3) "3"
+4) "4"
+5) "5"
+127.0.0.1:6379> SMEMBERS stb
+1) "2"
+2) "3"
+3) "5"
+4) "6"
+5) "7"
+127.0.0.1:6379> SUNION sta stb
+1) "1"
+2) "2"
+3) "3"
+4) "4"
+5) "5"
+6) "6"
+7) "7"
+127.0.0.1:6379> SUNIONSTORE sta_b sta stb
+(integer) 7
+127.0.0.1:6379> SMEMBERS sta_b
+1) "1"
+2) "2"
+3) "3"
+4) "4"
+5) "5"
+6) "6"
+7) "7"
+
+## 判断一个元素是否属于一个集合，如果返回值为1则表示属于，否则不是这个集合中的元素
+127.0.0.1:6379> SISMEMBER sta 3
+(integer) 1
+127.0.0.1:6379> SISMEMBER sta 33
+(integer) 0
+
+## 随机取出一个元素，但并不删除
+127.0.0.1:6379> SRANDMEMBER sta
+"3"
+127.0.0.1:6379> SRANDMEMBER sta_b
+"5"
+
+
+//zset常用操作命令
+zadd zseta 11 123 //创建有序集合
+zrange zseta 0 -1   //显示所有元素，按顺序显示
+zrange zseta 0 -1 withscores   //可以带上分值
+zrem zseta 222  //删除指定元素
+zrank zseta  222  //返回元素的索引值，索引值从0开始，按score正向排序
+zrevrank zseta 222   //同上，不同的是，按score反序排序
+zrevrange  zseta  0 -1  反序显示所有元素，并带分值
+zcard zseta  //返回集合中所有元素的个数
+zcount  zseta 1 10  //  返回分值范围1-10的元素个数
+zrangebyscore  zseta 1 10 // 返回分值范围1-10的元素
+zremrangebyrank zseta  0 2  //删除索引范围0-2的元素，按score正向排序
+zremrangebyscore zseta  1 10 //删除分值范围1-10的元素
+
+## zset操作示例
+127.0.0.1:6379> ZADD zset 11 aa
+(integer) 1
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "aa"
+127.0.0.1:6379> ZADD 88kk bb
+// 第一个字段只能是数字，所以会提示错误的数字参数
+(error) ERR wrong number of arguments for 'zadd' command
+127.0.0.1:6379> ZADD 232 ALin
+(error) ERR wrong number of arguments for 'zadd' command
+127.0.0.1:6379> ZADD 90 David
+(error) ERR wrong number of arguments for 'zadd' command
+127.0.0.1:6379> ZADD 29 Jilian.Anderson
+(error) ERR wrong number of arguments for 'zadd' command
+127.0.0.1:6379> ZADD zset 29 Jilian.Anderson
+(integer) 1
+127.0.0.1:6379> ZADD zset 88 Mr.Pxx
+(integer) 1
+127.0.0.1:6379> ZADD zset 82 Niclas.Cage
+(integer) 1
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "aa"
+2) "Jilian.Anderson"
+3) "Niclas.Cage"
+4) "Mr.Pxx"
+127.0.0.1:6379> ZRANGE zset 0 -1 withscores
+1) "aa"
+2) "11"
+3) "Jilian.Anderson"
+4) "29"
+5) "Niclas.Cage"
+6) "82"
+7) "Mr.Pxx"
+8) "88"
+### 删除一个元素
+127.0.0.1:6379> ZREM zset Mr.Pxx
+(integer) 1
+127.0.0.1:6379> ZRANGE zset 0 -1 
+1) "aa"
+2) "Jilian.Anderson"
+3) "Niclas.Cage"
+### 获取元素的索引位置
+127.0.0.1:6379> ZRANK zset aa
+(integer) 0
+127.0.0.1:6379> ZRANK zset Niclas.Cage
+(integer) 2
+### 按反向获取索引值
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "aa"
+2) "Dochovny"
+3) "Microsoft"
+4) "Jilian.Anderson"
+5) "Carly.Rae.Jepson"
+6) "Niclas.Cage"
+7) "Apple"
+8) "Google"
+127.0.0.1:6379> ZRANk zset Apple
+(integer) 6
+127.0.0.1:6379> ZREVRANK zset Apple
+(integer) 1
+127.0.0.1:6379> ZREVRANK zset apple
+(nil)
+### 反序显示所有元素，可带score显示
+127.0.0.1:6379> ZREVRANGE zset 0 -1
+1) "Google"
+2) "Apple"
+3) "Niclas.Cage"
+4) "Carly.Rae.Jepson"
+5) "Jilian.Anderson"
+6) "Microsoft"
+7) "Dochovny"
+8) "aa"
+127.0.0.1:6379> ZREVRANGE zset 0 -1 withscores
+1) "Google"
+2) "99"
+3) "Apple"
+4) "89"
+5) "Niclas.Cage"
+6) "82"
+7) "Carly.Rae.Jepson"
+8) "56"
+9) "Jilian.Anderson"
+10) "29"
+11) "Microsoft"
+12) "20"
+13) "Dochovny"
+14) "19"
+15) "aa"
+16) "11"
+
+## 显示所有的元素
+127.0.0.1:6379> ZREVRANGE zset 0 -1
+1) "Google"
+2) "Apple"
+3) "Niclas.Cage"
+4) "Carly.Rae.Jepson"
+5) "Jilian.Anderson"
+6) "Microsoft"
+7) "Dochovny"
+8) "aa"
+## 带分数显示
+127.0.0.1:6379> ZREVRANGE zset 0 -1 withscores
+1) "Google"
+2) "99"
+3) "Apple"
+4) "89"
+5) "Niclas.Cage"
+6) "82"
+7) "Carly.Rae.Jepson"
+8) "56"
+9) "Jilian.Anderson"
+10) "29"
+11) "Microsoft"
+12) "20"
+13) "Dochovny"
+14) "19"
+15) "aa"
+16) "11"
+## 获取元素的个数
+127.0.0.1:6379> ZCARD zset
+(integer) 8
+## 获取分数在20~50元素的个数
+127.0.0.1:6379> ZCOUNT zset 20 50
+(integer) 2
+127.0.0.1:6379> ZCOUNT zset 50 90
+(integer) 3
+## 获取50－90分的元素
+127.0.0.1:6379> ZRANGEBYSCORE zset 50 90
+1) "Carly.Rae.Jepson"
+2) "Niclas.Cage"
+3) "Apple"
+## 删除50-90分的元素
+127.0.0.1:6379> ZREMRANGEBYSCORE zset 50 90
+(integer) 3
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "aa"
+2) "Dochovny"
+3) "Microsoft"
+4) "Jilian.Anderson"
+5) "Google"
+127.0.0.1:6379> ZRANGE zset 0 -1 withscores
+1) "aa"
+2) "11"
+3) "Dochovny"
+4) "19"
+5) "Microsoft"
+6) "20"
+7) "Jilian.Anderson"
+8) "29"
+9) "Google"
+10) "99"
+## 按分数来删除元素，包含0，20
+127.0.0.1:6379> ZREMRANGEBYSCORE zset 0 20
+(integer) 3
+127.0.0.1:6379> ZRANGE zset 0 -1 withscores
+1) "Jilian.Anderson"
+2) "29"
+3) "Google"
+4) "99"
+## 按索引位置来删除元素
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "Jilian.Anderson"
+2) "Bruce"
+3) "Andy"
+4) "Gigge"
+5) "Google"
+6) "Pretty"
+127.0.0.1:6379> ZREMRANGEBYRANK zset 5
+(error) ERR wrong number of arguments for 'zremrangebyrank' command
+127.0.0.1:6379> ZREMRANGEBYRANK zset 5 5 //删除第6个元素
+(integer) 1
+127.0.0.1:6379> ZRANGE zset 0 -1
+1) "Jilian.Anderson"
+2) "Bruce"
+3) "Andy"
+4) "Gigge"
+5) "Google"
+127.0.0.1:6379> 
+

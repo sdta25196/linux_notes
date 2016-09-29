@@ -1,0 +1,30 @@
+1. 什么是ＨＡ，
+	High-Availability，高可用
+
+2. 环境准备
+role	hostname	ip
+master	MASTER.CF	192.168.3.173
+slave	SLAVE.CF	192.168.3.175
+
+软件：heartbeat
+
+在主、从机器上的/etc/hosts文件中追加这两行
+MASTER.CF   192.168.3.173
+SLAVE.CF    192.168.3.175
+1. 什么是ＨＡ，
+	Hign Available，高可用
+
+2. 环境准备
+role	hostname	ip
+master	MASTER.CF	192.168.3.173
+slave	SLAVE.CF	192.168.3.175
+
+#在主、从机器上的/etc/hosts文件中追加这两行
+MASTER.CF   192.168.3.173
+SLAVE.CF    192.168.3.175
+
+#安装heartbeat软件
+yum install -y heartbeat heartbeat-devel heartbeat-libs
+
+#由于HA信赖libnet，所以这个包也需要安装
+yum install -y libnet

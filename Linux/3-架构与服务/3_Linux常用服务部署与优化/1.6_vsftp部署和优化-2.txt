@@ -1,0 +1,63 @@
+「＃＃＃＃＃＃＃＃＃＃＃＃＃注意＃＃＃＃＃＃＃＃＃＃」配置文件后面一定不能有空格，可以通过这个命令去年尾行的空格
+sed -i 's/[ \t]*$//g' 1.txt
+如果出现了类似的错误，说明你的配置有问题，可以参考http://www.cnblogs.com/xia/archive/2012/04/13/2446078.html
+ls: ls: Login failed: 500 OOPS: bad bool value in config file for: anon_upload_enable
+
+错误排查：
+    a、配置问题，比如配置的尾行有空格或者是tab，用户名、配置文件路径等。
+    b、selinux、iptables
+    c、查看日志/var/log/secure
+    d、修改完配置后，没有及时重启服务，如[Delaying before reconnect: 36]
+
+1、创建一个虚拟用户对应的本地用户
+    useradd -s /sbin/nologin virftp
+    echo virftp | passwd virftp --stdin
+
+2、创建虚拟用户的用户名和密码文件
+    touch /etc/vsftpd/vsftpd_login
+    chmod 600 /etc/vsftpd/vsftpd_login
+添加用户名和密码，「注意：用户名和密码名占一行」，如
+    user1
+    passwd1
+    username1
+    passwd1
+
+3、使用db_load命令来生成vsftp服务可以识别的二进制数据库文件
+    db_load -T -t hash -f /etc/vsftdp/vsftpd_login /etc/vsftdp/vsftpd_login.db
+
+4、创建虚拟用户目录
+    mkdir /etc/vsftpd/vsftpd_user_conf
+    cd !$
+5、创建一个和虚拟用户一样的文件，这个文件语法是这个虚拟用户对应的配置文件
+    local_root=/home/virftp/user1
+    anonymous_enable=NO
+    write_enable=YES
+    local_umask=022
+    anon_upload_enable=NO 
+    anon_mkdir_write_enable=NO
+    idle_session_timeout=600
+    data_connection_timeout=120
+    max_clients=10
+    max_per_ip=5
+    local_max_rate=50000
+
+6、创建虚拟用户vsftp对应的根目录
+    mkdir /home/virftp/user1
+    chown -R virftp:virftp /home/virftp/user1/
+
+7、编辑默认的认证方式，/etc/pam.d/vsftpd，如果不指定认证方式，则默认还是使用本地用来来认证的
+在最上面添加两行，其中第三个字段中，这个是一个和用户认证的库文件，首先要确定这个文件存在，如果是64位的系统，可以在/lib64中找，后面的db文件也要写正确
+auth       sufficient   /lib/security/pam_userdb.so     db=/etc/vsftpd/vsftpd_login.auth
+account    sufficient   /lib/security/pam_userdb.so     db=/etc/vsftpd/vsftpd_login.auth
+
+8、编辑vsftpd主配置文件/etc/vsftpd/vsftpd.conf，把匿名用户相关的都删除掉
+    #打开来宾用户，不然虚拟用户无法登录
+    guest_enable=YES
+    #虚拟用户的用户名
+    guest_username=virftp
+    virtual_use_local_privs=YES
+    #读取虚拟用户配置文件的目录
+    user_config_dir=/etc/vsftpd/vsftpd_user_conf
+
+9、重启vsftpd服务
+    /etc/init.d/vsftpd restart

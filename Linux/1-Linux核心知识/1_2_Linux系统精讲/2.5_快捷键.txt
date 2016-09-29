@@ -1,0 +1,9 @@
+ctrl ＋ u 在光标处向前清空
+ctrl ＋ k 在光标处向后清空
+ctrl ＋ y 把刚刚清空的内存缓存在缓冲区中，然后直接粘贴在当前光标处
+ctrl ＋ d 退出，类似于exit
+ctrl ＋ c 取消命令的执行
+ctrl ＋ l 清屏
+ctrl ＋ z 中止程序，进程还在，不同于ctrl ＋ c
+ctrl ＋ s 冻结、锁定屏幕
+ctrl ＋ q 取消冻结、锁定

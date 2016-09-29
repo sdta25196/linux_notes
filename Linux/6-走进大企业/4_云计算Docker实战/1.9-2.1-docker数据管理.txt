@@ -1,0 +1,165 @@
+Docker数据管理
+1、挂载本地的目录到docker容器里面
+	//-v用来指定挂载的目录，':'前面的目录为宿主机的本地目录，‘:’后面的目录为docker容器里面的目录
+	docker run -itd -v /tmp/:/mnt/tmp_mount centos /bin/bash
+	docker exec -it 06fd71376bb5d3fe /bin/bash
+	//这里/tmp/tmp_mount下的文件和宿主机和/tmp目录下的文件是一致的。
+	//如果-v 后面仅仅有一个目录名，那么这个目录名是docker容器的挂载目录
+	mv /data /data___
+	docker run -itd -v /data --name test_11111 centos /bin/bash
+	cac9d071350aa89efbf6f1c73baa1c4f8bf0195c17a3c3590a146cf2c964a876
+	[root@cherry Documents]# docker exec -it cac bash
+	[root@cac9d071350a /]# ls /
+	anaconda-post.log  bin  data  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+	[root@cac9d071350a /]# df -h 
+	Filesystem                                                                                         Size  Used Avail Use% Mounted on
+	/dev/mapper/docker-253:0-1309602-cac9d071350aa89efbf6f1c73baa1c4f8bf0195c17a3c3590a146cf2c964a876  9.8G  231M  9.0G   3% /
+	tmpfs                                                                                              939M     0  939M   0% /dev
+	shm                                                                                                 64M     0   64M   0% /dev/shm
+	/dev/mapper/lvg_cherry-lv_root    
+
+	ls /mnt/tmp_mount
+	mylog.txt  passwd  yum.log  yum.log.bak
+
+2、挂载数据卷
+	我们挂载目录的时候，可以指定容器的name，如果不指定，系统就随机定义了，比如前面没有指定name，它就随便生成一个名为的名字，关于name可以通过docker ps查看，在最后一列
+	//查看已经启动了的容器，可以看到容器06fd71376bb5的name为distracted_hodgkin
+	docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS                    NAMES
+	b984be39e34e        centos              "/bin/bash"         14 seconds ago      Up 13 seconds                                stoic_stallman       
+	06fd71376bb5        centos              "/bin/bash"         6 minutes ago       Up 6 minutes                                 distracted_hodgkin   
+	03c52a39c1ce        registry            "docker-registry"   22 minutes ago      Up 22 minutes       0.0.0.0:5000->5000/tcp   goofy_banach     
+
+	// mounted_volume为容器的数据卷，也就是说我们再启动一个新的容器的时候可以使用name为distracted_hodgkin容器已经挂载了的数据卷，即/mnt/tmp_mount目录
+	docker run -itd --volumes-from distracted_hodgkin  centos  /bin/bash
+
+	//在开启容器的时候指定容器的名字
+	docker run -itd --name=busybox busybox /bin/sh
+
+3、定义数据卷容器
+	有时候，我们需要多个容器之间相互共享数据，类似于linux中的nfs，所以就可以找寻一个专门的数据卷容器，然后其它的容器可以直接挂载该数据
+	a）首先建立数据卷容器,注意这里的-v /data是容器里面的data和宿主机没有关系
+	docker run -itd -v /data_share --name vol_share_master centos /bin/bash
+	f05ab72b33b737d4696715263f4be7173c33634ac84f5b4ed582d0c5f8f9c4f2
+
+	docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+	f05ab72b33b7        centos              "/bin/bash"         2 seconds ago       Up 1 seconds 
+
+	b）然后让其它的容器挂载该镜像
+	# docker exec -it f0 bash
+	# pwd
+	/
+	# ls  
+	anaconda-post.log  bin  data_share  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+	# ifconfig &> /data_share/ifconfig.cmd
+	# cat !$
+	# cat /data_share/ifconfig.cmd
+	bash: ifconfig: command not found
+
+	# exit
+	# docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+	7f1d6ff96bf1        busybox             "/bin/sh"           56 seconds ago       Up 55 seconds                           determined_lumiere   
+	f05ab72b33b7        centos              "/bin/bash"         About a minute ago   Up About a minute                       vol_share_master     
+	# docker exec 7f /bin/sh
+	# docker exec -it 7f /bin/sh
+	# pwd
+	/
+	# ls
+	bin         data_share  dev         etc         home        proc        root        sys         tmp         usr         var
+	# cta data_share/ifconfig.cmd 
+	/bin/sh: cta: not found
+
+	这里有个问题，如果多个容器共享一个容器的目录，那么如果这个容器出问题了，其它的也就全完了，如何避免呢，没有错，直接挂载在宿主机上
+	操作如下；
+	#宿主机上复制一些数据到挂载目录上
+	[root@cherry ~]# ls /data/
+	anaconda-ks.cfg  install.log  install.log.syslog
+	[root@cherry ~]# cp -r Docker /data/
+	[root@cherry ~]# ls /data/
+	anaconda-ks.cfg  Docker  install.log  install.log.syslog
+
+	#创建一个共享挂载目录的容器
+	[root@cherry ~]# docker run -itd -v /data/:/data/ --name mount_master centos /bin/bash
+	0345c0b9dfa2079b85c810732b6b674f60f7196badfa94b0c9400abe444cd203
+	[root@cherry ~]# docker run -itd --volumes-from mount_master --name mount_slave_1 centos /bin/bash
+	bdcc62331c4eb882bcd80511d0d2f5312cb1d781aa38c5239f690fb80c688dbb
+	[root@cherry ~]# docker run -itd --volumes-from mount_master --name mount_slave_2 centos /bin/bash
+	8425746cde760bf9a8fa7d66687a4d99e605ced9408ceffcc65ca828a6a5bad8
+	[root@cherry ~]# docker run -itd --volumes-from mount_master --name mount_slave_3 centos /bin/bash
+	e50447491606d7a0f456889728de0194029d76cea443948053d8d566a562a0d7
+	[root@cherry ~]# docker run -itd --volumes-from mount_master --name mount_slave_4 centos /bin/bash
+	21d0cf68f8921de61ab0068e3ce1a024d1530a16fcbcd27cfe3fbeb24f397ccc
+	[root@cherry ~]# docker run -itd --volumes-from mount_master --name mount_slave_5 centos /bin/bash
+	8f76e2bf694a07ba0334d7812dc555478c44ac78c04c81f4a5f38d8093d6b8c1
+	[root@cherry ~]# docker ps
+	CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS               NAMES
+	8f76e2bf694a        centos              "/bin/bash"         1 seconds ago        Up 1 seconds                            mount_slave_5       
+	21d0cf68f892        centos              "/bin/bash"         8 seconds ago        Up 7 seconds                            mount_slave_4       
+	e50447491606        centos              "/bin/bash"         14 seconds ago       Up 13 seconds                           mount_slave_3       
+	8425746cde76        centos              "/bin/bash"         19 seconds ago       Up 18 seconds                           mount_slave_2       
+	bdcc62331c4e        centos              "/bin/bash"         25 seconds ago       Up 24 seconds                           mount_slave_1       
+	0345c0b9dfa2        centos              "/bin/bash"         About a minute ago   Up About a minute                       mount_master        
+	#登录其中一台容器，查看数据是否同步过来，如果数据信息是同步的，那么通过把挂载在本地容器后然后再共享给其它的容器是可⾏的
+	[root@cherry ~]# docker exec -it 8f bash
+	[root@8f76e2bf694a /]# ls /data/
+	Docker  anaconda-ks.cfg  install.log  install.log.syslog
+
+### 如何备份一个容器共享目录里的数据
+## 思路
+	A、在宿主机上创建一个用来备份数据的目录，如/data_vol_backup
+	B、再新建一个容器，这个容器引用已经共享出来的目录，如/data，然后再挂载一个宿主机的目录，这个目录仅仅是为了备份共享目录的数据，也就是/data目录
+	B、登录到刚刚新创建里的容器，然后把/data目录备份到刚刚挂载的目录不（宿主机：vol_backup，docker容器目录：/backup），可以打一个tar包，也可以加个定时任务cron，这个看需求，数据重要就添加保证数据安全
+
+## 具体操作
+#宿主机操作，创建一个备份目录，用来备份窗口共享数据的目录
+mkdir /data_vol_backup
+#这里新建一个窗口，挂载本地的/data_vol_backup目录，同时使用data_master的共享数据目录，这个容器的目的只是为了备份分享数据的/data目录
+docker ps -a
+CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS                   PORTS               NAMES
+adfc6c9aadfc        centos              "tar cvf /data_vol_b   3 hours ago         Exited (2) 3 hours ago                       furious_brattain    
+9c3dcb26b8f3        centos              "/bin/bash"            3 hours ago         Up 3 hours                                   data_master         
+
+docker run -itd --volumes-from data_master -v /data_vol_backup/:/backup centos /bin/bash
+7110c320a923622b21def01be0317a415946a97941f10d1d0206f565b67bd508
+
+#登录刚刚新建的容器
+docker exec -it 71 bash
+#备份共享数据的/data目录
+tar cfv /backup/data_share.tar.gz /data
+
+#查看/backup目录下是否生成对应的文件，也可以通过宿主机来查看/data_vol_backup目录下是否有对应文件生成
+#容器
+[root@7110c320a923 /]# ls /backup/
+#宿主机
+[root@cherry ~]# ls /data_vol_backup/
+data_share.tar.gz
+
+### 现在讨论下如何恢复备份的数据
+## 思路
+	A、先创建一个数据卷容器
+	B、再创建一个新的容器并挂载该数据卷容器，然后再把原来备份的tar包解包
+## 具体操作
+[root@cherry Documents]# docker run -itd -v /data --name val_recover centos /bin/bash
+78e895bb220541e2c7b4ecfefcec022d898a501adf4d4b02f6d9bf52e128a290
+[root@cherry Documents]# docker run -itd --volumes-from val_recover -v /data_vol_backup/:/backup centos /bin/bash
+b6faca98c6ce94970ed72fe555bd7adb35a6a044fa35105c026af0add90995eb
+[root@cherry Documents]# docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+b6faca98c6ce        centos              "/bin/bash"         3 seconds ago       Up 2 seconds                            hungry_ardinghelli   
+78e895bb2205        centos              "/bin/bash"         2 minutes ago       Up 2 minutes                            val_recover          
+9c3dcb26b8f3        centos              "/bin/bash"         4 hours ago         Up 4 hours        
+[root@cherry Documents]# docker exec -it b6 /bin/bash
+[root@b6faca98c6ce /]# ls /data/
+Docker  anaconda-ks.cfg  ipconfig.info
+#注意这里已经可以看到data_share.tar文件了，如果说之前的数据丢了，可以直接从这里解压的
+[root@b6faca98c6ce /]# ls /backup/
+data_share.tar.gz
+[root@b6faca98c6ce /]# df -h
+Filesystem                                                                                         Size  Used Avail Use% Mounted on
+/dev/mapper/docker-253:0-1309602-b6faca98c6ce94970ed72fe555bd7adb35a6a044fa35105c026af0add90995eb  9.8G  231M  9.0G   3% /
+tmpfs                                                                                              939M     0  939M   0% /dev
+shm                                                                                                 64M     0   64M   0% /dev/shm
+/dev/mapper/lvg_cherry-lv_root 
+

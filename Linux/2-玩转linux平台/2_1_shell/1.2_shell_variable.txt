@@ -1,0 +1,98 @@
+2016-02-22
+今天学习的内容如下
+1、shell的特性、命令补全，命令历史，别名，子shell等
+2、shell变量，变量的命名，
+	a、区分大小写，不能以数字开关，不建议使用大写、系统命令、系统关键字、特殊符号来命名变量，系统变量一般都是大写的
+	b、当变量含有特殊字符的时候，需要用单引号，单引号会剥夺特殊含义，类似于转义字符
+	c、使用反引号``，作用是引用命令的结果，如vim_path=`which vim`
+	d、命令的叠加，如：
+		myvim=/usr/bin/vim 
+		tmp="$myvim":tmp 
+		echo tmp
+		/usr/bin/vim:tmp
+3、子shell，export在子shell中引用父shell中的变量，关于export命令的介绍可以参考这篇文章，http://mymobile.iteye.com/blog/1407601
+4、local, cann only be used in a function
+5、/etc/profile全局
+
+	
+
+
+1. Display local system all of variables
+    env #only display the system variables
+    set #include a user define variable.
+2. define avariable
+    variable_name=variable_value # that betwen variable_value and variable_value with blank is not permitt. and start with integer is not permmit too.
+3. Example
+[root@CF_ALY_CN ~]# b=132 abc
+-bash: abc: command not found
+[root@CF_ALY_CN ~]# b="132 abc"
+[root@CF_ALY_CN ~]# echo $b
+132 abc
+[root@CF_ALY_CN ~]# c=123#bb
+[root@CF_ALY_CN ~]# echo $c
+123#bb
+[root@CF_ALY_CN ~]# d=13!#$!$%^%^*(0
+d=13d=13$c%^%^*(0
+-bash: syntax error near unexpected token `('
+[root@CF_ALY_CN ~]# d="13d=13$c%^%^*(0"
+[root@CF_ALY_CN ~]# echo $d
+13d=13123#bb%^%^*(0
+[root@CF_ALY_CN ~]# d='13d=13$c%^%^*(0'
+[root@CF_ALY_CN ~]# echo $d
+13d=13$c%^%^*(0
+[root@CF_ALY_CN ~]#
+
+[root@CF_ALY_CN ~]# a=1
+[root@CF_ALY_CN ~]# b=2
+[root@CF_ALY_CN ~]# c=3
+[root@CF_ALY_CN ~]# d=4
+[root@CF_ALY_CN ~]# b=$a+1
+[root@CF_ALY_CN ~]# echo $b
+1+1
+[root@CF_ALY_CN ~]# b=$c1
+[root@CF_ALY_CN ~]# echo $b # the result is null because of ' priority is larger than ", and the shell look as c1(echo $c1) is a new variable.
+
+[root@CF_ALY_CN ~]# b="$a"1
+[root@CF_ALY_CN ~]# echo $b
+11
+[root@CF_ALY_CN ~]# b='$a'2
+[root@CF_ALY_CN ~]# echo $b
+$a2
+[root@CF_ALY_CN ~]# 
+
+[root@CF_ALY_CN ~]# set
+BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:expand_aliases:extquote:force_fignore:hostcomplete:interactive_comments:login_shell:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+    BASH_ARGC=()
+    BASH_ARGV=()
+    BASH_CMDS=()
+    BASH_LINENO=()
+............. ...................
+SH_CONNECTION='123.117.104.238 54632 123.57.58.71 22'
+SSH_TTY=/dev/pts/0
+TERM=xterm-256color
+UID=0
+USER=root
+_=env
+a=1
+aaa=kkkk
+b='$a2'
+c=3
+colors=/root/.dircolors
+d=4
+[root@CF_ALY_CN ~]# unset a
+[root@CF_ALY_CN ~]# unset aaa
+[root@CF_ALY_CN ~]# unset b
+[root@CF_ALY_CN ~]# unset c
+[root@CF_ALY_CN ~]# unset d
+[root@CF_ALY_CN ~]# unset
+[root@CF_ALY_CN ~]# set
+BASH=/bin/bash
+BASHOPTS=checkwinsize:cmdhist:expand_aliases:extquote:force_fignore:hostcomplete:interactive_comments:login_shell:progcomp:promptvars:sourcepath
+BASH_ALIASES=()
+    BASH_ARGC=()
+    BASH_ARGV=()
+    BASH_CMDS=()
+    BASH_LINENO=()
+

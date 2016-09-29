@@ -1,0 +1,60 @@
+
+cat /usr/local/nginx/conf/vhosts/www.cf.com.conf
+server
+{
+    listen 80;
+    server_name www.cf.com www.tlm.org www.zw.com ;
+    #配置重定向
+    if ($host != 'www.cf.com')
+    {
+        rewrite ^/(.*)$ http://www.cf.com/$1 permanent;
+    }
+    index index.html index.htm index.php;
+    root /data/www/;
+    #启用日志记录功能
+    access_log /usr/local/nginx/logs/nginx-access.log combined_realip;
+
+    #不记录指定类型的日志
+    location ~ .*\.(gif|ico|jpg|jpeg|png|bmp|swf)$
+    {
+        access_log off;
+        #配置缓存时间
+        expires 15d;
+    }
+    
+    #配置缓存时间
+    location ~ \.(js|css)
+    {
+        access_log off;
+        expires 3h;
+    }
+
+    location ~ static
+    {
+        access_log off;
+    }
+
+    location ~ (static|cache) 
+    {
+        access_log off;
+    }
+
+    #nginx用户认证
+    location ~ .*admin\.php$ {
+        auth_basic "nginx authentification web page";
+        auth_basic_user_file /usr/local/nginx/conf/.htppasswd;
+        include fastcgi_params;
+        fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+
+    location ~ \.php$ {
+    include fastcgi_params;
+#fastcgi_pass 127.0.0.1:9000;
+    fastcgi_pass unix:/tmp/php-fpm-fcgi.sock;
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME /data/www$fastcgi_script_name;
+    }
+}
+

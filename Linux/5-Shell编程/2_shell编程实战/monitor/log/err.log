@@ -1,0 +1,8 @@
+++ date '+%F %T'
++ echo '2016-04-04 03:56:23 load average'
++ /bin/bash ../shares/load.sh
++ grep -q to_mon_502=1 ../conf/mon.conf
+++ date '+%F %T'
++ echo '2016-04-04 04:01:24 load average'
++ /bin/bash ../shares/load.sh
++ grep -q to_mon_502=1 ../conf/mon.conf

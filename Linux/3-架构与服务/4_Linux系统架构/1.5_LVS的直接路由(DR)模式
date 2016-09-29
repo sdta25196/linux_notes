@@ -1,0 +1,47 @@
+1. 准备工作
+	a.ipvsadm -C
+		ipvsadm -ln
+	b. 清空director上的iptables规则 
+	c. 把real server上的网关还原
+	
+2. director配置
+cat /usr/local/sbin/lvs_dr.sh
+###################################################################################
+#!/bin/bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+ipvsadm=/sbin/ipvsadm
+vip=192.168.3.200
+rs1=192.168.3.103
+rs2=192.168.3.104
+
+ifconfig eth0:0 down
+ifconfig eth0:0 $vip broadcast $vip netmask 255.255.255.255 up
+route add -host $vip dev eth0:0
+
+$ipvsadm -C
+$ipvsadm -A -t $vip:80 -s rr
+$ipvsadm -a -t $vip:80 -r $rs1:80 -g -w 1
+$ipvsadm -a -t $vip:80 -r $rs2:80 -g -w 1
+###################################################################################
+
+3. rear server配置脚本，各个rs都要添加以下的脚本
+###################################################################################
+#!/bin/bash
+
+vip=192.168.3.200
+ifconfig lo:0 $vip broadcast $vip netmask 255.255.255.255 up
+route add -host $vip lo:0
+
+echo 1 > /proc/sys/net/ipv4/conf/lo/arp_ignore 
+echo 2 > /proc/sys/net/ipv4/conf/lo/arp_announce 
+echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore 
+echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
+###################################################################################
+
+4. 测试需要使用vip，即192.168.3.200:80，使用vip，就是为了保证real server上回来的包的源ip和director的源ip一致
+
+5. 参考文档 
+http://bbs.chinaunix.net/thread-2122158-1-1.html
+http://www.apelearn.com/bbs/forum.php?mod=forumdisplay&fid=39&filter=typeid&typeid=36 
+http://www.apelearn.com/bbs/thread-8071-1-1.html

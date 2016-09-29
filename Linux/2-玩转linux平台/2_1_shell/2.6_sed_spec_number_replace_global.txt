@@ -1,0 +1,18 @@
+[root@SLAVE ~]# cat << eof > 1.txt
+> 1111
+> 222333333
+> 44444444445
+> eof
+[root@SLAVE ~]# sed -i 2{s/2/3/g} 1.txt 
+[root@SLAVE ~]# cat 1.txt 
+1111
+333333333
+44444444445
+[root@SLAVE ~]# sed -i 3{s/4/5/g} 1.txt 
+[root@SLAVE ~]# cat !$
+cat 1.txt
+1111
+333333333
+55555555555
+[root@SLAVE ~]# 
+

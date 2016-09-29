@@ -1,0 +1,81 @@
+1. nohup sleep 100 &; nohup ifconfig 
+    nohup - run a command immune to hangups, with output to a non-tty
+
+DESCRIPTION
+       Run COMMAND, ignoring hangup signals.
+
+      --help display this help and exit
+
+      --version output version information and exit 
+      
+      If  standard input is a terminal, redirect it from /dev/null.  If standard output is a terminal, append output to  ‘nohup.out’  if  possible, ‘$HOME/nohup.out’ otherwise.  If standard error is a terminal, redirect it to standard output.  To save output to FILE, use  ‘nohup  COMMAND  > FILE’.  
+      
+      NOTE:  your  shell  may  have  its  own version of nohup, which usually supersedes the version described here.  Please refer  to  your  shell’s documentation for details about the options it supports.
+
+2. screen
+    yum install -y screen
+screen
+ctrl + a + d，临时退出，并不是完成退出，命令还在执行，以后还可以继续回到现场
+screen -ls 查看有多少个screen在运行
+screen  -r screen_id 就可以回到原来离开的地方
+[root@server ~]# screen  -ls
+There are screens on:
+498.pts-2.server(Detached)
+    515.test(Detached)
+2 Sockets in /var/run/screen/S-root.
+[root@server ~]# screen  -r test
+[detached]
+[root@server ~]# screen -r 515
+
+[root@server ~]# ps aux | grep screen
+root       498  0.0  0.0   6804  1252 ?        Ss   14:02   0:00 SCREEN
+root       515  0.0  0.0   6804  1276 ?        Ss   14:02   0:00 SCREEN -S test
+root       537  0.0  0.0   6804  1244 ?        Ss   14:07   0:00 SCREEN -S VBox
+root       558  0.0  0.0   6036   800 pts/0    S+   14:07   0:00 grep --color -i screen
+[root@server ~]# screen -ls
+There are screens on:
+    498.pts-2.server(Detached)
+        515.test(Detached)
+        537.VBox(Detached)
+    3 Sockets in /var/run/screen/S-root.
+
+    [root@server ~]# kill -s SIGKILL 515
+    [root@server ~]# screen -ls
+    There are screens on:
+        498.pts-2.server(Detached)
+        515.test(Dead ???)
+        537.VBox(Detached)
+    Remove dead screens with 'screen -wipe'.
+    3 Sockets in /var/run/screen/S-root.
+
+    [root@server ~]# screen -ls
+    There are screens on:
+        498.pts-2.server(Detached)
+        515.test(Dead ???)
+        537.VBox(Detached)
+    Remove dead screens with 'screen -wipe'.
+    3 Sockets in /var/run/screen/S-root.
+
+    [root@server ~]# ps aux | grep screen
+    root       498  0.0  0.0   6804  1252 ?        Ss   14:02   0:00 SCREEN
+    root       537  0.0  0.0   6804  1244 ?        Ss   14:07   0:00 SCREEN -S VBox
+    root       563  0.0  0.0   6036   804 pts/0    S+   14:08   0:00 grep --color -i screen
+    [root@server ~]# screen -r 515
+    There is a screen on:
+        515.test(Dead ???)
+    Remove dead screens with 'screen -wipe'.
+    There is no screen to be resumed matching 515.
+    [root@server ~]# screen -wipe
+    There are screens on:
+        498.pts-2.server(Detached)
+        515.test(Removed)
+        537.VBox(Detached)
+    1 socket wiped out.
+    2 Sockets in /var/run/screen/S-root.
+
+screen -S your_wanted_name #在启动一个screen的时候同时更改名字，可以通过screen -ls查看
+
+curl -u username:password web_site_url
+curl -o output_file_name URL
+curl -O URL #don't change default name
+

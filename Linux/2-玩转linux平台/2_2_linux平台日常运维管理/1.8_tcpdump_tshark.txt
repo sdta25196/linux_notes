@@ -1,0 +1,13 @@
+1. tcpdump, command not found. yum install -y tcpdump
+    tcpdump -nn
+    tcpdump -i eth0 -neXXvv 
+    tcpdump -i eth0 -neXXvv tcp
+    tcpdump -i eth0 -neXXvv tcp and port 80 and host 192.168.3.17
+    tcpdump -i eth0 -neXXvv port 22
+    tcpdump -i eth0 -neXXvv -c 10
+    tcpdump -i eth0 -neXXvv -c 10 -w path_file
+
+2. thark, yum install -y wireshark
+    tshark -n -t a -R http.request -T fields -e "frame.item" -e "ip.src" -e "http.host" -e "http.request.method" -e "http.request.uri"
+
+3. tcpreplay, tcpdump install -y epel-release; yum install -y tcpreplay

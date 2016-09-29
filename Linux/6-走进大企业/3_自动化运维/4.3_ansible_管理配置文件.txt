@@ -1,0 +1,83 @@
+参考文档：http://www.apelearn.com/bbs/thread-9781-1-1.html
+    在生产环境中大多时候是需要管理配置文件的，安装软件包只是在初始化环境的时候用一次，使用的步并不会太大，下面我们来写个管理nginx配置文件的playbook
+
+1、创建相关的目录
+# mkdir -p /etc/ansible/nginx_config/roles/{new,old}/{files,handlers,vars,tasks}
+说明：
+    new：更新时用到
+    old：回滚时用到
+    files：此目录下包含nginx.conf 和 vhosts 目录
+    handlers：为重启nginx服务的命令
+
+    关于回滚，需要在执行playbook之前先备份一下旧的配置，所以对老配置的管理一定要严格，千万不能随意修改线上的机器的配置，并且要保证new/files下的配置要和线上的一致
+
+2、先把nginx.conf和vhosts目录放到files目录下
+# cp -r /usr/local/nginx/conf/{nginx.conf,vhosts} /etc/ansible/nginx_config/roles/new/files/
+# ls /etc/ansible/nginx_config/roles/new/files/
+nginx.conf  vhosts
+
+3、定义变量
+// 定义以后要用到的变量，变量都在vars中定义
+# vim /etc/ansible/nginx_config/roles/new/vars/main.yml
+nginx_basedir: /usr/local/nginx/
+
+4、定义重启服务的文件，在handler中定义
+# vim /etc/ansible/nginx_config/roles/new/handlers/main.yml
+- name: restart nginx service
+  shell: /etc/init.d/nginx reload
+
+5、定义入口核心配置文件
+# vim /etc/ansible/nginx_config/roles/new/tasks/main.yml
+- name: copy conf file
+  copy: src={{ item.src }} dest={{ nginx_basedir }}{{ item.dest }} backup=yes owner=root group=root mode=0644
+  with_items:
+    - { src: nginx.conf, dest: conf/nginx.conf }
+    - { src: vhosts, dest: conf/ }
+  notify: restart nginx
+
+6、定义总的入口文件
+# vim /etc/ansible/nginx_config/update.yml
+---
+- hosts: 192.168.3.175
+  user: root
+  roles:
+    - new
+
+6、执行
+# ansible-playbook /etc/ansible/nginx_config/update.yml
+
+PLAY ***************************************************************************
+
+TASK [setup] *******************************************************************
+ok: [192.168.3.175]
+
+TASK [new : copy conf file] ****************************************************
+ok: [192.168.3.175] => (item={u'dest': u'conf/nginx.conf', u'src': u'nginx.conf'})
+ok: [192.168.3.175] => (item={u'dest': u'conf/', u'src': u'vhosts'})
+
+PLAY RECAP *********************************************************************
+192.168.3.175              : ok=2    changed=0    unreachable=0    failed=0   
+
+回滚的backup.yml对应的role为old，回滚操作就是把旧的配置覆盖掉，然后重新加载nginx服务，总体思路是在操作之前先把当前状态的配置文件拷贝一份，然后再操作，万一将来出现什么问题，就可以把old里面的配置文件再复制过去。
+# rsync -avp /etc/ansible/nginx_config/roles/new/ /etc/ansible/nginx_config/roles/old/
+# tree roles/old/
+roles/old/
+├── files
+├── handlers
+├── new
+│   ├── files
+│   │   ├── nginx.conf
+│   │   └── vhosts
+│   │       ├── default.conf
+│   │       ├── fd.cf.com.conf
+│   │       ├── proxy.conf
+│   │       └── www.cf.com.conf
+│   ├── handlers
+│   │   └── main.yml
+│   ├── tasks
+│   │   └── main.yml
+│   └── vars
+│       └── main.yml
+├── tasks
+└── vars
+

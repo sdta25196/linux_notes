@@ -1,0 +1,154 @@
+1. 自定义域
+    vi /etc/named.conf
+    在最后添加下面的语句
+    zone "cf.com" IN {
+            type master;
+            file "cf.com.zone";
+    };
+
+    #配置完检查是否有错误
+    named-checkconf
+
+    #自定义域名配置
+    cat /var/named/cf.com.zone
+    $TTL 1D
+    @       IN SOA  @ admin.cf.com. (
+                                        20160329 ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H)     ; minimum
+
+            IN      NS      ns.cf.com.
+            IN      MX  5   mail.cf.com.
+    mail    IN      A       192.168.3.173
+    #注意这里用到了nameserver　192.168.3.173，所以主配置文件里面也要做相应的修改
+    ns      IN      A       192.168.3.173
+    www     IN      A       127.0.0.1
+    bbs     IN      CNAME   www
+
+    #主配置文件修改如下
+    listen-on port 53 { 127.0.0.1;192.168.3.173; };
+
+    #检测主配置文件语法是否正确
+    named-checkconfig 
+
+    #检测语法是否正确
+    named-checkzone "cf.com" /var/named/cf.com.zone
+
+    #重新启动服务
+    /etc/init.d/named restart
+
+2. 自定义域，反解析
+    
+    #编辑主配置文件，最后一行添加反解析的相关配置
+    vi /etc/named.conf
+	zone "3.168.192.in-addr.arpa" IN {
+		    type master;
+		    file "3.168.192.zone";
+	};
+    
+    
+    #编辑zone配置文件
+	$TTL 1D
+	@       IN SOA  @ admin.cf.com. (
+		                                20160329 ; serial
+		                                1D      ; refresh
+		                                1H      ; retry
+		                                1W      ; expire
+		                                3H)     ; minimum
+
+		    IN      NS      ns.cf.com.
+	173     IN      PTR     ns.cf.com.
+	20      IN      PTR     mail.cf.com. 
+	30      IN      PTR     bbs.cf.com.
+	40      IN      PTR     www.cf.com.
+
+	#检测配置文件是否有错误
+	[root@centos6dot7 ~]# named-checkzone "cf.com" /var/named/cf.com.zone 
+	zone cf.com/IN: loaded serial 20160329
+	OK
+	[root@centos6dot7 ~]# named-checkzone "3.168.192.zone" /var/named/3.168.192.zone 
+	zone 3.168.192.zone/IN: loaded serial 20160329
+	OK
+	
+	#测试结果
+	[root@centos6dot7 ~]# dig @192.168.3.173 -x 192.168.3.20
+
+	; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.37.rc1.el6_7.7 <<>> @192.168.3.173 -x 192.168.3.20
+	; (1 server found)
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 49269
+	;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 1
+
+	;; QUESTION SECTION:
+	;20.3.168.192.in-addr.arpa.	IN	PTR
+
+	;; ANSWER SECTION:
+	20.3.168.192.in-addr.arpa. 86400 IN	PTR	mail.cf.com.
+
+	;; AUTHORITY SECTION:
+	3.168.192.in-addr.arpa.	86400	IN	NS	ns.cf.com.
+
+	;; ADDITIONAL SECTION:
+	ns.cf.com.		86400	IN	A	192.168.3.173
+
+	;; Query time: 0 msec
+	;; SERVER: 192.168.3.173#53(192.168.3.173)
+	;; WHEN: Sun Mar 27 05:29:27 2016
+	;; MSG SIZE  rcvd: 101
+
+	[root@centos6dot7 ~]# dig @192.168.3.173 -x 192.168.3.30
+
+	; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.37.rc1.el6_7.7 <<>> @192.168.3.173 -x 192.168.3.30
+	; (1 server found)
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 34394
+	;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 1
+
+	;; QUESTION SECTION:
+	;30.3.168.192.in-addr.arpa.	IN	PTR
+
+	;; ANSWER SECTION:
+	30.3.168.192.in-addr.arpa. 86400 IN	PTR	bbs.cf.com.
+
+	;; AUTHORITY SECTION:
+	3.168.192.in-addr.arpa.	86400	IN	NS	ns.cf.com.
+
+	;; ADDITIONAL SECTION:
+	ns.cf.com.		86400	IN	A	192.168.3.173
+
+	;; Query time: 0 msec
+	;; SERVER: 192.168.3.173#53(192.168.3.173)
+	;; WHEN: Sun Mar 27 05:29:35 2016
+	;; MSG SIZE  rcvd: 100
+
+	[root@centos6dot7 ~]# dig @192.168.3.173 -x 192.168.3.40
+
+	; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.37.rc1.el6_7.7 <<>> @192.168.3.173 -x 192.168.3.40
+	; (1 server found)
+	;; global options: +cmd
+	;; Got answer:
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 33533
+	;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 1
+
+	;; QUESTION SECTION:
+	;40.3.168.192.in-addr.arpa.	IN	PTR
+
+	;; ANSWER SECTION:
+	40.3.168.192.in-addr.arpa. 86400 IN	PTR	www.cf.com.
+
+	;; AUTHORITY SECTION:
+	3.168.192.in-addr.arpa.	86400	IN	NS	ns.cf.com.
+
+	;; ADDITIONAL SECTION:
+	ns.cf.com.		86400	IN	A	192.168.3.173
+
+	;; Query time: 0 msec
+	;; SERVER: 192.168.3.173#53(192.168.3.173)
+	;; WHEN: Sun Mar 27 05:29:42 2016
+	;; MSG SIZE  rcvd: 100
+
+

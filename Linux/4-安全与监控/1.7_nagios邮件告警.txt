@@ -1,0 +1,57 @@
+1. 需要告警功能需要在服务端编辑 vi /etc/nagios/objects/contacts.cfg ，在最后添加下面的内容
+##主要定义了用户组和用户
+define contactgroup{
+        contactgroup_name           admins
+        alias                       Nagios Administrators
+        members                     nagiosadmin,user1 #注意这里不可以使用别名
+}
+
+# Add warnning message or error message to the contact via email.
+define contact {
+        contact_name                user1
+        use                         generic-contact
+        alias                       nagios_user_1
+        email                       hienha@163.com
+}
+
+define contact {
+        contact_name                user2
+        use                         generic-contact
+        alias                       nagios_user_2
+        email                       736718952@qq.com
+}
+
+define contact {
+        contact_name                user3
+        use                         generic-contact
+        alias                       nagios_user_3
+        email                       736718952@qq.com
+}
+
+define contactgroup {
+        contactgroup_name           common
+        alias                       common
+        members                     user1,user2,user3
+}
+
+2. 然后在要需要告警的服务里面加上 contactgroup，如针对这台192.168.3.173的某个监控内容进行监控，如果异常把邮件发送给指定的邮箱，配置如下
+define service{
+        use                     generic-service
+        host_name               192.168.3.175
+        service_description     check_http
+        check_command           check_http
+        max_check_attempts      5
+        normal_check_interval   1
+        #config sent warnning message to mailbox by sepcified email.
+        contact_groups          common      # 这个组名在/etc/nagios/objects/contacts.cfg中有定义
+        notifications_enabled   1           # 是否打开提醒功能, 1表示打开
+        notification_period     24x7        # 设置提醒的时间
+        notification_options    w,u,r,c     # 表示service的状态，出现这些状态就告警
+}
+
+3. 重启服务（监控端）
+    /etc/init.d/nagios restart
+
+4. 参考文章
+    http://www.apelearn.com/bbs/thread-7380-1-1.html
+    http://www.apelearn.com/bbs/thread-7917-1-1.html

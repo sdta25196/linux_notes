@@ -1,0 +1,25 @@
+1、host模式
+	使用docker run时使用--net=host来指定
+
+	docker使用的网络实际上和宿主机一样，在容器内看到的网卡ip就是宿主机的ip
+	docker run -it --rm --net=host gentoo/stage3-amd64
+
+2、container模式
+	使用--net=container:container_id/container_name
+	多个容器使用共同的网络，看到的ip也是一样的，这种情况容器的id也是一样的，其实也就是hostname
+
+	docker run -itd --name gentoo gentoo/stage3-amd64 /bin/bash
+	d29b1125d6fba8462d8acf9a6a8fc5453db2e2a7f6d4072a3bbfd6263b0d25be
+	docker run -it --rm --net=container:d29b1125d6fb gentoo/stage3-amd64 /bin/bash
+
+3、none模式
+	--net-none来指定
+	这种情况下，不会配置任何网络
+
+	docker run -it --rm --net=none gentoo/stage3-amd64 /bin/bash
+
+4、bridge模式
+	默认模式，不用指定任何的参数，默认就是这种模式。
+	这个模式会为每个容器分配一个独立的Network Namespace. 类似于Wmware的nat模式。
+	同一个宿主机上的所有的容器会在一个网段下面，相互之间是可以通信的
+

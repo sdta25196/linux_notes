@@ -1,0 +1,91 @@
+1、安装
+    yum install -y samba samba-client samba-doc
+
+2、配置文件位置
+    /etc/samba/smb.conf
+
+3、共享一个目录出来，不需要输入密码，但是只有只读权限
+    security = user 修改为 security = share
+    workgroup = MYGROUP 修改为 workgroup = WORKGROUP
+    最下面添加这些内容，
+    [ChangFeng]
+    comment = share all
+    path = /tmp/sambashare
+    browseable = yes
+    public = yes
+    writable = no
+    ;启动服务
+    /etc/init.d/smb start
+
+4、Windows下的测试，直接在运行里面输入下面的命令，如果正常是应该可以看到共享名称的「ChangFeng」
+    \\192.168.3.173
+
+5、Linux下可以用smbclient，需要安装samba-client这个包，上面的配置是没有用户和密码验证的，所以需要有一个-N参数
+    smbclient  -N //192.168.3.173/ChangFeng 也可以 smbclient //192.168.3.173/ChangFeng，直接回车
+
+    以挂载的方式访问
+    yum install cifs-utils
+    mount -t cifs //192.168.3.173/ChangFeng /opt
+
+6、以用户名和密码的方式认证
+    a、编辑smb主配置文件 /etc/samba/smb.conf
+    security = user
+    [ChangFeng]
+    comment = share for  user
+    path = /tmp/sambashare
+    browseable = yes 
+    writable = yes 
+    public = no
+
+    b、创建认证用户
+    useradd smb
+    pdbedit -a smb #添加一个用户smb
+    pdbedit -x smb #删除一个用户smb
+
+    c、更改共享目录的权限，保证客户端用户有写的权限
+    chomod 777 /tmp/sambshare
+
+    d、重启服务
+    /etc/init.d/smb restart
+
+7、测试验证
+    Windows:    file://192.168.3.173/ChangFeng
+    Linux:      smbclient  -U smbuser //192.168.3.173/ChangFeng
+    Linux:      mount -t cifs -o user=smbuser,password=888 //192.168.3.173/ChangFeng /opt
+    关于linux挂载samba的相关文档可以参考 man mount.cifs
+
+8、参考文档
+    http://shjiayeah.blog.163.com/blog/static/225604180201321261310349/
+
+9、配置文件
+/etc/samba/smb.conf
+[global]
+    workgroup = WORKGROUP
+    server string = Samba Server Version %v
+    log file = /var/log/samba/log.%m
+    max log size = 50
+    security = user
+    passdb backend = tdbsam
+    load printers = yes 
+    cups options = raw 
+
+[homes]
+    comment = Home Directories
+    browseable = no
+    writable = yes 
+        
+[printers]
+    comment = All Printers
+    path = /var/spool/samba
+    browseable = no
+    guest ok = no
+    writable = no
+    printable = yes 
+
+[CF]
+    comment = share for  user
+    path = /tmp/sambashare
+    browseable = yes 
+    writable = yes 
+    public = no
+    

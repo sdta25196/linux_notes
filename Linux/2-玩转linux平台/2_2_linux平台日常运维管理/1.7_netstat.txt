@@ -1,0 +1,3 @@
+1. netstat -lnp
+2. netstat -an
+3. netstat -an | grep 122.112.69.86:80 | grep -ic establish 可以计算出当前时间的并发连接

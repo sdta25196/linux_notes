@@ -1,0 +1,78 @@
+1. memcache命令行操作
+# 先查看监听的ip地址
+[root@MASTER memcached-1.4.25]# netstat -lnp | grep memcached
+tcp        0      0 127.1.1.1:11211             0.0.0.0:*                   LISTEN      11330/memcached     
+udp        0      0 127.1.1.1:11211             0.0.0.0:*                               11330/memcached     
+# 登录memcached
+telnet 127.1.1.1 11211
+Trying 127.1.1.1...
+Connected to 127.1.1.1.
+Escape character is '^]'.
+set key2 0 60 3
+abcdefg
+CLIENT_ERROR bad data chunk
+ERROR
+set key1 0 300 5
+ab
+cd
+CLIENT_ERROR bad data chunk
+ERROR
+set key3 0 300 5
+abcde
+STORED
+get key3
+VALUE key3 0 5
+abcde
+END
+set key2 1 10 10
+aaa
+2222222
+CLIENT_ERROR bad data chunk
+ERROR
+quit
+Connection closed by foreign host.
+
+2. memcached语法规则
+a) <command name> <key> <flags> <exptime> <bytes>\r\n <data block>\r\n
+注：\r\n在windows下是Enter键) 
+　<command name> 可以是”set”, “add”, “replace”。
+    set”表示按照相应的<key>存储该数据，没有的时候增加，有的覆盖。
+    add”表示按照相应的<key>添加该数据,但是如果该<key>已经存在则会操作失败。
+    replace”表示按照相应的<key>替换数据,但是如果该<key>不存在则操作失败。
+
+b) <key> 客户端需要保存数据的key。
+
+c) <flags> 是一个16位的无符号的整数(以十进制的方式表示)。标志将和需要存储的数据一起存储,并在客户端get数据时返回。客户可以将此标志用做特殊用途，此标志对服务器来说是不透明的。
+
+d) <exptime> 过期的时间。为0表示存储的数据永远不过期(但可被服务器算法：LRU 等替换)。果非0(unix时间或者距离此时的秒数),当过期后,服务器可以保证用户得不到该数据(以服务器时间为标准)。
+
+e) <bytes> 需要存储的字节数，当用户希望存储空数据时<bytes>可以为0
+
+f) <data block>需要存储的内容，输入完成后，最后客户端需要加上”\r\n”（直接点击Enter）作为”命令头”的结束标志。
+
+3. 操作示例
+telnet 127.1.1.1 11211
+Trying 127.1.1.1...
+Connected to 127.1.1.1.
+Escape character is '^]'.
+set key3 1 100 4
+a234
+STORED
+get key3
+VALUE key3 1 4
+a234
+END
+replace key3 1 200 5 
+12345
+STORED
+get key3
+VALUE key3 1 5
+12345
+END
+delete key3
+DELETED
+get key3
+END
+quit
+Connection closed by foreign host.
+

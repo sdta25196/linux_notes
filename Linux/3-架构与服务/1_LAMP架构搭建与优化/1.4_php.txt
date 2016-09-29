@@ -1,0 +1,55 @@
+1. pre-work
+    Download: http://cn2.php.net/distributions/php-5.4.45.tar.bz2
+    Decompress Archive: tar jxf php* ; cd php*
+    Dependency Libs: yum install -y bzip2-devel openssl-devel libxml2-devel zlib-devel libjpeg-turbo-devel libpng-devel freetype-devel epel-release libmcrypt-devel
+
+2. install
+    ./configure \
+        --prefix=/usr/local/php \
+        --with-apxs2=/usr/local/apache2/bin/apxs \
+        --with-config-file-path=/usr/local/php/etc \
+        --with-mysql=/usr/local/mysql/ \
+        --with-libxml-dir \
+        --with-gd \
+        --with-jpeg-dir \
+        --with-png-dir \
+        --with-freetype-dir \
+        --with-iconv-dir \
+        --with-zlib-dir \
+        --with-bz2 \
+        --with-openssl \
+        --with-mcrypt \
+        --enable-soap \
+        --enable-gd-native-ttf \
+        --enable-mbstring \
+        --enable-sockets \
+        --enable-exif \
+        --disable-ipv6
+
+3. configuration
+vi /usr/local/apache2/conf/httpd.conf
+found this 
+<IfModule dir_module>
+    DirectoryIndex index.html
+</IfModule>
+then changed to bellow; if index.php is first , firt resolve .php then .html
+<IfModule dir_module>
+    DirectoryIndex index.php index.html
+</IfModule>
+
+like that above;
+AddType application/x-compress .Z
+AddType application/x-gzip .gz .tgz
+#add bellow this line.
+AddType application/x-httpd-php .php
+
+4. check it out
+/etc/init.d/httpd restart
+curl -I localhost:80/index.php
+
+
+#############################
+ln -s /usr/local/apache2/bin/apachectl  /usr/local/bin/httpd
+ln -s /usr/local/mysql/bin/mysql /usr/local/bin/mysql
+ln -s /usr/local/php/bin/php /usr/local/bin/php
+

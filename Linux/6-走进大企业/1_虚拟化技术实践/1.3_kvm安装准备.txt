@@ -1,0 +1,36 @@
+http://www.apelearn.com/bbs/thread-8299-1-1.html
+
+1. 准备工作
+    虚拟机：virtualbox安装
+    linux版本：centos6.7_x86_64
+    内存：８g
+    cpu：４核
+    硬件：sda1 16g; sda2 128g
+    Virtualbox -> Settings -> System -> Acceleration -> "Hardware Virtualization: Enable VT-x/AMD-V"
+
+2. 安装kvm前的准备工作
+    a、清空iptables,ip6tables,ipv４and　ipv６
+    iptables -F
+    ip6tables -F
+    service iptables save
+    service ip6tables save
+    service iptables stop
+    service ip6tables stop
+
+    b、关闭selinux
+    setenforce　０
+    sed -i 's/SELINUX=Enforcing/SELINUX=disabled/' /etc/selinux/config
+
+3. 开始安装kvm
+    a、检测是否支持虚拟化
+        grep -Ei 'vmx|svm' /proc/cpuinfo
+    b、 通过yum安装虚拟化的软件包
+    yum install -y kvm virt-*  libvirt  bridge-utils qemu-img
+    说明：
+    kvm:软件包中含有KVM内核模块，它在默认linux内核中提供kvm管理程序
+    libvirts:安装虚拟机管理工具，使用virsh等命令来管理和控制虚拟机。
+    bridge-utils:设置网络网卡桥接。
+    virt-*:创建、克隆虚拟机命令，以及图形化管理工具virt-manager
+    qemu-img:安装qemu组件，使用qemu命令来创建磁盘等。
+
+

@@ -1,0 +1,186 @@
+参考文档：http://www.apelearn.com/bbs/thread-9781-1-1.html
+思路：先在一台机器上编译安装好nginx、打包，然后再用ansible下发到每个客户端上
+# mkdir nginx_install
+# cd nginx_install
+# mkdir -p roles/{common,install}/{handlers,files,meta,tasks,templates,vars}
+
+说明：
+    roles 目录下有两个角色，common为一些准备操作，install为安装nginx的操作，这两个目录下的目录结构都一样
+    handlers 下面是当发生改变时要执行的操作，通常是配置文件发生改变，重启服务
+    files 为安装时用到的一些文件
+    meta 为说明信息，说明角色包信赖关系
+    tasks 里面是核心的配置文件
+    templates 通常存一些配置文件，启动脚本等一些模板文件
+    vars 下为定义的变量
+
+# tree .
+.
+└── roles
+    ├── common
+    │   ├── files
+    │   ├── handlers
+    │   ├── meta
+    │   ├── tasks
+    │   ├── templates
+    │   └── vars
+    └── install
+        ├── files
+        ├── handlers
+        ├── meta
+        ├── tasks
+        ├── templates
+        └── vars
+
+15 directories, 0 files
+
+# cd /etc/ansible/nginx_install/roles/common/tasks/
+// 定义common的tasks，因为nginx是需要安装一些信赖包的
+vim main.yml
+- name: Install initialization require software
+  yum: name={{ item }} state=installed
+  with_items:
+    - zlib-devel
+    - pcre-devel
+    - openssl-devel
+
+// 拷贝配置文件以及安装文件
+# cd /etc/ansible/nginx_install/ ; tar cxvf nginx.tar.gz /usr/local/nginx
+# cd /etc/ansible/nginx_install/roles/install/
+# cp /etc/init.d/nginx templates/
+# cp /usr/local/nginx/conf/nginx.conf templates/
+# cp /etc/ansible/nginx_install/nginx.tar.gz files/
+
+// 定义变量
+# cat /etc/ansible/nginx_install/roles/install/vars/main.yml
+nginx_user: www
+nginx_port: 80
+nginx_basedir: /usr/local/nginx
+
+// 定义tasks
+// copy.yml的主要功能就是复制安装文件和配置文件
+注意:
+    1. 使用tar zcvf file.tar.gz /usr/local/nginx的时候，通过tar tvf file.tar.gz可以看到外面还有两层目录usr/local，由于下面使用的tar包并不是在安装目录下打包的，所以后面的解压路径我就写根目录了。这点需要特别注意下。
+    2. copy对应的位置在files下，templates对应的位置在templates
+# cd /etc/ansible/nginx_install/roles/install/tasks/
+# cat copy.yml 
+- name: Copy Nginx Software
+  copy: src=nginx.tar.gz dest=/tmp/nginx.tar.gz owner=root group=root
+- name: Uncompression Nginx Software
+  shell: tar zxvf /tmp/nginx.tar.gz -C /
+- name: Copy Nginx Scripts
+  template: src=nginx dest=/etc/init.d/nginx owner=root group=root mode=0755
+- name: Copy Nginx Configure File
+  template: src=nginx.conf dest={{ nginx_basedir }}/conf/ owner=root group=root mode=0644
+
+// install.yml
+- name: Create Nginx User
+  user: name={{ nginx_user }} state=present createhome=no shell=/sbin/nologin
+- name: Start Nginx Server
+  service: name=nginx state=restarted  
+- name: Add Boot Start Nginx Service
+  shell: chkconfig --level 345 nginx on
+- name: Delete Nginx compression file
+  shell: rm -rf /tmp/nginx.tar.gz
+
+// 再定义main.yml并且把copy.yml和install.yml文件包含进来
+# cd /etc/ansible/nginx_install/roles/install/tasks
+# vim main.yml 
+- include: copy.yml
+- include: install.yml
+至此两个rules：common和install就定义完成了，接下来还需要再定义一个入口配置文件
+
+// 接下来再定义一个总的入口文件
+# cd /etc/ansible/nginx_install/
+# vim install.yml
+---
+- hosts: testhost
+  remote_user: root
+  gather_facts: True
+  roles:
+    - common
+    - install
+
+测试安装
+# ansible-playbook install.yml 
+
+PLAY ***************************************************************************
+
+TASK [setup] *******************************************************************
+ok: [192.168.3.175]
+
+TASK [common : Install initialization require software] ************************
+ok: [192.168.3.175] => (item=[u'zlib-devel', u'pcre-devel', u'openssl-devel'])
+
+TASK [install : include] *******************************************************
+included: /etc/ansible/nginx_install/roles/install/tasks/copy.yml for 192.168.3.175
+
+TASK [install : Copy Nginx Software] *******************************************
+ok: [192.168.3.175]
+
+TASK [install : Uncompression Nginx Software] **********************************
+changed: [192.168.3.175]
+ [WARNING]: Consider using unarchive module rather than running tar
+
+
+ TASK [install : Copy Nginx Scripts] ********************************************
+ ok: [192.168.3.175]
+
+ TASK [install : Copy Nginx Configure File] *************************************
+ ok: [192.168.3.175]
+
+ TASK [install : include] *******************************************************
+ included: /etc/ansible/nginx_install/roles/install/tasks/install.yml for 192.168.3.175
+
+ TASK [install : Create Nginx User] *********************************************
+ ok: [192.168.3.175]
+
+ TASK [install : Start Nginx Server] ********************************************
+ changed: [192.168.3.175]
+
+ TASK [install : Add Boot Start Nginx Service] **********************************
+ changed: [192.168.3.175]
+
+ TASK [install : Delete Nginx compression file] *********************************
+ changed: [192.168.3.175]
+  [WARNING]: Consider using file module with state=absent rather than running rm
+
+
+  PLAY RECAP *********************************************************************
+  192.168.3.175              : ok=12   changed=4    unreachable=0    failed=0   
+
+整体目录结构：
+cd /etc/ansible/nginx_install
+.
+├── install.retry
+├── install.yml
+└── roles
+    ├── common
+    │   ├── files
+    │   ├── handlers
+    │   ├── meta
+    │   ├── tasks
+    │   │   └── main.yml
+    │   ├── templates
+    │   └── vars
+    └── install
+        ├── files
+        │   └── nginx.tar.gz
+        ├── handlers
+        ├── meta
+        ├── tasks
+        │   ├── copy.yml
+        │   ├── install.yml
+        │   └── main.yml
+        ├── templates
+        │   ├── nginx
+        │   └── nginx.conf
+        └── vars
+            └── main.yml
+
+15 directories, 10 files
+
+整体执行流程：(配置文件见当前目录下的4,1-4.2_nginx_install.tar.xz)
+1、先找总的入口文件nginx_install目录下的install.yml，里面包含两个角色roles（common和install）
+2、先云common中找，直接找tasks目录下的main.yml，这个目录下仅有一个task，在tasks目录下有一个main.yml，里面主要是安装一些信赖的包
+3、执行完成后就去install中找，也同样是在tasks目录中执行main.yml，main.yml中包含两配置文件，一个是copy.yml，另外一个install.yml，然后分别执行这两个yml文件
+4、总体流程就是这样，最终返回执行的结果。

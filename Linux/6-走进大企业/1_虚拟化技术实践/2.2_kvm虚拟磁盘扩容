@@ -1,0 +1,82 @@
+1. 重新调整kvm中的虚拟机，可以使用以下的方法
+	qemu-img resize /kvm/vm_1.qcow2 +2G
+	qemu-img resize /kvm/vm_1.qcow2 +2G
+	在宿主机中执行virsh destroy vm_name，不可以在虚拟中执行reboot这样是不能识别新硬盘的。
+	登录虚拟机后要用fdisk -l查看，因为还没有分区，所以使用df -h看到的并不是实际的磁盘空间。
+	1.1 以下测试说明，如果虚拟机有创建快照，则不可以调整镜像的大小
+	[root@localhost ~]# qemu-img resize /kvm/vm_1.qcow2 +1G
+	This image format does not support resize
+	[root@localhost ~]# virsh snapshot-delete vm_1 1461018636
+	Domain snapshot 1461018636 deleted
+
+	[root@localhost ~]# virsh snapshot-delete vm_1 1461018691
+	Domain snapshot 1461018691 deleted
+
+	[root@localhost ~]# qemu-img resize /kvm/vm_1.qcow2 +1G
+	Image resized.
+	[root@localhost ~]#
+	
+2. 给新的磁盘空间分区
+	fdisk /dev/vda
+	p; n; p; 3; w
+	fdisk -l
+	# 使用lvm方式添加
+	[root@vm-1 ~]# pvcreate /dev/vda3
+	Physical volume "/dev/vda3" successfully created
+	# 查看
+	[root@vm-1 ~]# pvs
+	  PV         VG       Fmt  Attr PSize PFree
+	  /dev/vda2  VolGroup lvm2 a--  9.51g    0 
+	  /dev/vda3           lvm2 ---  4.00g 4.00g
+	# 在卷组中添加新的磁盘
+	[root@vm-1 ~]# pvs
+	  PV         VG       Fmt  Attr PSize PFree
+	  /dev/vda2  VolGroup lvm2 a--  9.51g    0 
+	  /dev/vda3           lvm2 ---  4.00g 4.00g
+	[root@vm-1 ~]# vgextend VolGroup /dev/vda3
+	  Volume group "VolGroup" successfully extended
+	[root@vm-1 ~]# pvs
+	  PV         VG       Fmt  Attr PSize PFree
+	  /dev/vda2  VolGroup lvm2 a--  9.51g    0 
+	  /dev/vda3  VolGroup lvm2 a--  4.00g 4.00g
+	[root@vm-1 ~]# 
+	# 查看物理卷、卷组、逻辑卷状态
+	[root@vm-1 ~]# pvs
+	  PV         VG       Fmt  Attr PSize PFree
+	  /dev/vda2  VolGroup lvm2 a--  9.51g    0 
+	  /dev/vda3  VolGroup lvm2 a--  4.00g 4.00g
+	[root@vm-1 ~]# vgs
+	  VG       #PV #LV #SN Attr   VSize  VFree
+	  VolGroup   2   2   0 wz--n- 13.50g 4.00g
+	[root@vm-1 ~]# lvs
+	  LV      VG       Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+	  lv_root VolGroup -wi-ao---- 8.51g                                                    
+	  lv_swap VolGroup -wi-ao---- 1.00g 
+	# 添加所有的空闲空间到逻辑卷中
+	[root@vm-1 ~]# lvextend -l +100%FREE /dev/VolGroup/lv_root 
+	  Size of logical volume VolGroup/lv_root changed from 8.51 GiB (2178 extents) to 12.50 GiB (3201 extents).
+	  Logical volume lv_root successfully resized
+	[root@vm-1 ~]# lvs
+	  LV      VG       Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+	  lv_root VolGroup -wi-ao---- 12.50g                                                    
+	  lv_swap VolGroup -wi-ao----  1.00g                                                    
+	[root@vm-1 ~]# 
+	# 调整逻辑卷大小 
+	[root@vm-1 ~]# resize2fs  /dev/VolGroup/lv_root 
+	resize2fs 1.41.12 (17-May-2010)
+	Filesystem at /dev/VolGroup/lv_root is mounted on /; on-line resizing required
+	old desc_blocks = 1, new_desc_blocks = 1
+	Performing an on-line resize of /dev/VolGroup/lv_root to 3277824 (4k) blocks.
+	The filesystem on /dev/VolGroup/lv_root is now 3277824 blocks long.
+
+	[root@vm-1 ~]#
+	
+	####### START ########
+	pvcreate /dev/vda*
+	vgs
+	VG       #PV #LV #SN Attr   VSize  VFree
+	VolGroup   2   2   0 wz--n- 13.50g 4.00g
+	lvextend -l +100%FREE /dev/VolGroup/lv_root
+	resize2fs  /dev/VolGroup/lv_root 
+	####### ENDS #########
+	

@@ -1,0 +1,22 @@
+;dump database discuz to a file
+mysqldump -uroot -pnew_admin discuz > /path/file.sql
+
+;单独备份一张表
+mysqldump -uroot -pnew_admin discuz pre_forum_post > /path/file.sql
+
+;myisam引擎中disucz表存放的位置
+/data/mysql/discuz目录下，每个表都有３个不同的后缀名*.frm、*.MYD、*.MYI
+;现在如果不小心删除了discuz的pre_forum_post这张表，如果没有备份那么，那么………………
+
+;备份恢复整个数据库
+mysql -uroot -pnew_admin discuz < /path/file.sql
+
+;恢复单独一张表，备份的时候需要添加表名，而恢复的时候就不需要了
+mysql -uroot -p'new_admin' discuz < /path/file.sql
+
+;备份、恢复的时候字符集不一致的情况
+mysqldump　--default-character-set=gbk -uroot -pnew_admin discuz > /path/file.sql
+mysql --default-character-set -uroot -p'new_admin' discuz < /path/file.sql
+
+;一次性备份所有库下的表
+http://www.apelearn.com/bbs/thread-1012-1-1.html

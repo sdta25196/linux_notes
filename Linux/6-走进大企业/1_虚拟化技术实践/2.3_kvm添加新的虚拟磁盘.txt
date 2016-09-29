@@ -1,0 +1,32 @@
+1. 先使用qemu-img添加一块新的硬盘
+qemu-img create -f qcow2 /kvm/vm_1_new.qcow2 5G
+Formatting '/kvm/vm_1_new.qcow2', fmt=qcow2 size=5368709120 encryption=off cluster_size=65536
+
+2. 编辑vm_1配置文件(/etc/libvirt/qemu/vm_1.xml)，把新添加的磁盘映射进来
+#　注意下面的<address type='' ... />这行不用写，是系统自己生成的
+#　<target dev='vdb' bus='virtio' />这行是参考前面已有的磁盘名称，前面是vda，所有这里就写成了vdb，当然写成不一样的就可以了。
+
+virsh edit vm_1
+<disk type='file' device='disk'>
+    <driver name='qemu' type='qcow2' cache='none'/>
+    <source file='/kvm/vm_1.qcow2'/>
+    <target dev='vda' bus='virtio'/>
+    <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+</disk>
+<disk type='file' device='disk'>
+    <driver name='qemu' type='qcow2' cache='none'/>
+    <source file='/kvm/vm_1_new.qcow2'/>
+    <target dev='vdb' bus='virtio'/>
+    <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
+</disk>
+
+3. 使用新添加的硬盘
+    １、使用fdisk来创建分区
+        fdisk /dev/vdb
+    ２、直接格式化
+        mkfs.ext4 /dev/vdb
+
+4. 挂载新分区
+    a、编辑/etc/fstab文件，追加一行
+        /dev/vdb                /mnt                    ext4    defaults        0 0
+    b、mount -a测试配置文件的正确性，查看已经挂载的分区，df -h

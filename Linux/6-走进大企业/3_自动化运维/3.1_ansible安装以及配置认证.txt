@@ -1,0 +1,24 @@
+同saltstack一样，也是使用python开发的
+1、ansible特点
+    a、不需要安装客户端，ansible是通过sshd来通信的
+    b、基于模块工作，模块可以由任意语言开发
+    c、不仅支持使用命令行工作，也支持yaml格式的playbook
+    d、支持sudo
+    e、有提供UI（浏览器图形化）www.ansible.com/tower，10台以内的主机可以免费使用
+    f、开源的UI，https://github.com/alaxli/ansible_ui
+        文档：http://download.csdn.net/detail/liyang23456/7741185
+
+2、ansible安装
+    a、两台机器 192.168.3.173 192.168.3.175
+    b、只需要在服务端上安装即可(192.168.3.173)
+        yum install -y epel-release
+        yum install -y ansible
+
+3、ansible配置密钥
+        ## 生成密钥对
+        ssh-keygen 
+        ## 修改文件权限
+        chmod 600 /root/.ssh/authorized_keys
+        ## 关闭selinux
+        setenforce 0
+        ssh-copy-id -i /root/.ssh/id_rsa.pub root@192.168.3.175

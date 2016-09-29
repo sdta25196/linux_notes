@@ -1,3 +1,0 @@
-1. xz filename #compress a file, source file will be dispear
-2. xz -d filename.xz #decompressed a file, the *.xz source file will be dispear too.
-3. xzcat file.xz #just like bzcat, zcat

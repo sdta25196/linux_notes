@@ -1,6 +1,0 @@
-1、公钥放在服务器端，私钥是个人保存的。私钥也可以设备密码，这样会更加安全一点。
-2、将公钥复制在服务器端，在家目录下创建一个.ssh目录，这个目录的权限为700，在.ssh目录下还需要创建一个文件，名为authorized_keys，这个文件的权限为600
-3、关闭selinux，临时关闭 setenforce 0，永久关闭，vi ／etc/selinux/config，把SELINUX=Enforce修改为disabled，保存然后重启。
-查看selinux的状态的方法a、getenforce b、sestatus
-4、关闭防火墙，linux中有两种防火墙，一个是selinux,另外一个就是netfilter，也就是我们说的iptables，
-	清空iptables规则，iptables -F, service iptables save，这样就保证了重启生效了，其实也可以直接让iptables开机的时候不启动。不过以后的生产环境中，可能是不允许的

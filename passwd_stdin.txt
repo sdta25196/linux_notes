@@ -1,4 +1,0 @@
-有时候我们在shell脚本中更改密码，在某些场合下，不希望使用交互方式来更改，要怎么做呢，
-还好，passwd命令提供了--stdin参数，可以从标准输入流中获取密码，用法如下
-
-echo new_paswd | passwd user_name --stdin

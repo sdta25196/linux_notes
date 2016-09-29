@@ -1,1 +1,0 @@
-rpm -ivh 'http://www.lishiming.net/data/attachment/forum/epel-release-6-8_32.noarch.rpm'

@@ -19,4 +19,4 @@ for i in xrange(1,7):
 		print "\t\tYou win, Congratulations"
 		sys.exit()
 else:
-	print "\t\t:(, sorry, try to play the game again..-"
+	print "\t\t:(, sorry, try to play the game again.."

@@ -18,5 +18,6 @@
 				free + buffers + cached = (-/+ buffers)->free
 			  (-/+ buffers/cache)->used = Mem->used - Mem-buffers - Mem->cached
 (-/+ buffers)->free + (-/+ buffers)used	= Mem->total
+                  Mem->free + Mem->used = Mem->total
 ```
  buffers和cached列的数字分别表示buffers和cached还有多少剩余

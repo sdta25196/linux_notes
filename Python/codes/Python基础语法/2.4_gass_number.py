@@ -6,8 +6,8 @@ import sys
 i = random.randint(1,20)
 
 print "NOTICE: You must input number range is 1~20..."
-for i in xrange(1,7):
-	print "Please input a number, you is %s times to input;" % i
+for x in xrange(1,7):
+	print "Please input a number, you is %s times to input;" % x
 	j = int(raw_input())
 	if j <= 0 or j > 20:
 		print "Please input a number range 1~20, Please try again"

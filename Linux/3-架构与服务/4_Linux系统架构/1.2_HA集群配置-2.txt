@@ -44,6 +44,7 @@ node SLAVE.CF
 ＃这个ip地址作为判断两台机器是否可以连通的标准，中介地址
 ping 192.168.3.1
 ＃表示一hacluster的身份运行后面的脚本，这个脚本主要时用来探测网络是否联通的，respawn的作用就是当后面的脚本进程死掉的时候自动激活，重新运行脚本
+#　注意：如果是６４位系统，那么下面的可执行文件则在/usr/lib64/heartbeat/ipfail
 respawn hacluster /usr/lib/heartbeat/ipfail
 
 3. 复制配置文件到从服务器上

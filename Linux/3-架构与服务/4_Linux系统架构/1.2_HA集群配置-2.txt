@@ -15,8 +15,12 @@ auth 3
 chmod 600 /etc/ha.d/authkeys
 
 #编辑haresources,如果需要添加多个服务，服务名之间用空格分割就可以
-找到node1，替换为 MASTER.CF 192.168.3.200/24/eth0:0 nginx
+找到node1，替换为 MASTER.CF 192.168.3.200/24/eth0:0
+nginx，从上面并不需要手动添加eth0:0相关的配置信息，如果主挂掉后，那么从会自己启动相应的服务和对应的vip
 node1 10.7.8.100/24/eth0 httpd nginx
+MASTER.CF为主的主机名
+192.168.3.200是vip，后面要加上掩码
+eth0:0表示使用那个接口作为vip
 
 #编辑ha.cf文件，内容如下
 #debugfile和logfile记录的内容是差不多的

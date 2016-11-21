@@ -14,3 +14,4 @@ def lineCount(f):
 	return n
 
 print lineCount( input )
+

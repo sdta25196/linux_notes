@@ -2,6 +2,7 @@
 #-*- coding:utf8 -*-
 
 from optparse import OptionParser
+import sys
 
 parser = OptionParser()
 parser.add_option("-c", "--char",
@@ -24,4 +25,17 @@ parser.add_option("-l", "--line",
 
 options, args = parser.parse_args()
 
-print options, args
+#print options, args #options接收一个字典类型的数据，args则是一个列表
+#print options.words #打印出字典中，words对应的值
+
+data = sys.stdin.read()
+chars = len(data)
+words = len( data.split() )
+lines = data.count('\n')
+
+if options.lines:
+	print lines,
+elif options.words:
+	print words
+elif options.characters:
+	print chars

@@ -33,9 +33,11 @@ chars = len(data)
 words = len( data.split() )
 lines = data.count('\n')
 
+if not (options.characters or options.words or options.lines):
+	options.lines, options.words, options.characters = True, True, True
 if options.lines:
 	print lines,
-elif options.words:
-	print words
-elif options.characters:
-	print chars
+if options.words:
+	print words,
+if options.characters:
+	print chars,
